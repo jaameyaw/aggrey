@@ -84,7 +84,15 @@ jobs:
       - uses: astral-sh/setup-uv@v6
 
       - name: Run file checks
-        run: >
-          uvx pre-commit run --all-files
-          check-added-large-files check-merge-conflict check-yaml check-toml
-          detect-private-key end-of-file-fixer trailing-whitespace
+        run: |
+          for hook in \
+            check-added-large-files \
+            check-merge-conflict \
+            check-yaml \
+            check-toml \
+            detect-private-key \
+            end-of-file-fixer \
+            trailing-whitespace
+          do
+            uvx pre-commit run --all-files "$hook"
+          done
