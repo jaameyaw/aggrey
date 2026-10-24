@@ -96,3 +96,13 @@ jobs:
           do
             uvx pre-commit run --all-files "$hook"
           done
+
+  schema-sync:
+    name: Schema matches docs (DDL)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check db/schema.sql matches schema doc section 4
+        run: python3 db/check_schema_sync.py
