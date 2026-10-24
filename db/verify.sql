@@ -10,7 +10,7 @@
 --   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f db/verify.sql
 -- Or paste the whole file into the Supabase SQL editor and run it.
 --
--- Expected dataset: mvp_v1_2 (223 menu, 10 hours, 11 holiday, 11 metadata rows).
+-- Expected dataset: mvp_v1_3 (227 menu, 10 hours, 11 holiday, 11 metadata rows).
 
 DO $$
 DECLARE
@@ -96,7 +96,7 @@ BEGIN
         -- 5. Row counts after seeding (dataset mvp_v1_2).
         ----------------------------------------------------------------------
         SELECT count(*) INTO n FROM public.menus;
-        IF n <> 223 THEN failures := failures || format('menus has %s rows; expected 223', n); END IF;
+        IF n <> 227 THEN failures := failures || format('menus has %s rows; expected 227', n); END IF;
 
         SELECT count(*) INTO n FROM public.hours;
         IF n <> 10 THEN failures := failures || format('hours has %s rows; expected 10', n); END IF;
@@ -176,7 +176,8 @@ BEGIN
         END IF;
 
         ----------------------------------------------------------------------
-        -- 10. holiday_sample rows exist and are brunch-only with null weekday.
+        -- 10. holiday_sample rows exist, carry a null weekday, and are brunch or
+        --     dinner (dinner sample added in mvp_v1_3). Both meals must be present.
         ----------------------------------------------------------------------
         SELECT count(*) INTO n FROM public.menus WHERE menu_scope = 'holiday_sample';
         IF n = 0 THEN
@@ -185,10 +186,23 @@ BEGIN
             SELECT count(*) INTO n
             FROM public.menus
             WHERE menu_scope = 'holiday_sample'
-              AND (meal_type <> 'brunch' OR day_of_week IS NOT NULL);
+              AND (meal_type NOT IN ('brunch', 'dinner') OR day_of_week IS NOT NULL);
             IF n <> 0 THEN
                 failures := failures
-                    || format('%s holiday_sample row(s) are not brunch-only with null day_of_week', n);
+                    || format('%s holiday_sample row(s) are not brunch/dinner with a null day_of_week', n);
+            END IF;
+
+            IF NOT EXISTS (
+                SELECT 1 FROM public.menus
+                WHERE menu_scope = 'holiday_sample' AND meal_type = 'brunch'
+            ) THEN
+                failures := failures || 'no holiday_sample brunch rows found';
+            END IF;
+            IF NOT EXISTS (
+                SELECT 1 FROM public.menus
+                WHERE menu_scope = 'holiday_sample' AND meal_type = 'dinner'
+            ) THEN
+                failures := failures || 'no holiday_sample dinner rows found';
             END IF;
         END IF;
     END IF;

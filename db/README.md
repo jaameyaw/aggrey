@@ -9,7 +9,7 @@ design and `docs/roadmap.md` modules M1–M2 for the plan.
 | File | Purpose |
 | --- | --- |
 | `schema.sql` | Audited schema (enums, tables, triggers, RLS). **Fresh database only** — it creates types and is not re-runnable. Do not edit silently; schema changes go in a new migration file plus an ADR (roadmap M1 step 2). |
-| `seed.sql` | Initial data import, dataset `mvp_v1_2` (223 menu, 10 hours, 11 holiday, 11 metadata rows). Generated from `data/Aggrey_MVP_Data.xlsx`; re-running is duplicate-safe. Do not hand-edit — regenerate from the workbook (M2). |
+| `seed.sql` | Initial data import, dataset `mvp_v1_3` (227 menu, 10 hours, 11 holiday, 11 metadata rows). Generated from `data/Aggrey_MVP_Data.xlsx`; re-running is duplicate-safe. Do not hand-edit — regenerate from the workbook (M2). |
 | `verify.sql` | Read-only structural + content checks. Raises one exception listing every failure, or a `verify.sql: ALL CHECKS PASSED` notice. Makes no changes. |
 
 ## Run order
@@ -54,7 +54,7 @@ pg_ctl -D "$TMP/data" stop -m immediate && rm -rf "$TMP"   # tear down
 Structural: the four tables, both enums (`meal_type`, `schedule_type`) with their exact
 labels, the four `updated_at` triggers, and RLS enabled on every table.
 
-Content (dataset `mvp_v1_2`): row counts 223 / 10 / 11 / 11; no overlapping holiday ranges;
+Content (dataset `mvp_v1_3`): row counts 227 / 10 / 11 / 11; no overlapping holiday ranges;
 every weekday (1–5) has breakfast/lunch/dinner and every weekend day (6–7) has brunch/dinner;
 all five lunch stations present per weekday; zero `lite_lunch` menu rows; and `holiday_sample`
-rows exist and are brunch-only with a null `day_of_week`.
+rows exist, carry a null `day_of_week`, and include both brunch and dinner.
