@@ -56,3 +56,13 @@ jobs:
           uvx pre-commit run --all-files
           check-added-large-files check-merge-conflict check-yaml check-toml
           detect-private-key end-of-file-fixer trailing-whitespace
+
+  schema-sync:
+    name: Schema matches docs (DDL)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check db/schema.sql matches schema doc section 4
+        run: python3 db/check_schema_sync.py
