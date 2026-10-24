@@ -1,7 +1,7 @@
 # Aggrey MVP Database Schema
 
 **Database:** PostgreSQL on Supabase  
-**Schema revision:** 2026-10-24 final alignment audit. **Dataset version:** `mvp_v1_2` aligned with `Aggrey_MVP_Data.xlsx`  
+**Schema revision:** 2026-10-24 final alignment audit. **Dataset version:** `mvp_v1_3` aligned with `Aggrey_MVP_Data.xlsx`  
 **Purpose:** Build-ready database specification for Codex and FastAPI
 
 ---
@@ -79,7 +79,7 @@ The executable version below is **`schema.sql`**, intended for a **fresh Supabas
 
 ```sql
 -- Aggrey MVP database schema. Final alignment audit (2026-10-24).
--- Authoritative dataset: Aggrey_MVP_Data.xlsx (dataset_version mvp_v1_2).
+-- Authoritative dataset: Aggrey_MVP_Data.xlsx (dataset_version mvp_v1_3).
 -- Fresh Supabase PostgreSQL project only. Execute once before seed.sql.
 -- Exactly four public tables; weekly menu entries have NO service_date.
 
@@ -107,7 +107,7 @@ CREATE TABLE public.menus (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     CONSTRAINT menus_schedule_compatible CHECK (
         (menu_scope = 'holiday_sample'
-         AND day_of_week IS NULL AND meal_type = 'brunch')
+         AND day_of_week IS NULL AND meal_type IN ('brunch', 'dinner'))
         OR (menu_scope = 'weekly'
             AND day_of_week IS NOT NULL
             AND day_of_week BETWEEN 1 AND 5
@@ -221,7 +221,7 @@ The `menus` table stores the actual recurring food menu.
 |---|---|---:|---|
 | `id` | `uuid` | Yes | Primary key |
 | `menu_scope` | `text` | Yes | `weekly` or `holiday_sample` |
-| `day_of_week` | `smallint` | Conditional | 1 = Monday through 7 = Sunday; null for `holiday_sample` |
+| `day_of_week` | `smallint` | Conditional | 1 = Monday through 7 = Sunday; null for `holiday_sample` (holiday and break brunch and dinner) |
 | `meal_type` | `meal_type` | Yes | Breakfast, lunch, Lite Lunch, dinner, or brunch |
 | `station` | `text` | Yes | Dining station |
 | `food_item` | `text` | Yes | Food item |
@@ -368,7 +368,10 @@ VALUES
         'Creamy-Herb Salmon', 1),
 
     ('holiday_sample', NULL, 'brunch', 'Main hot-food',
-        'Blackened Chicken', 1);
+        'Blackened Chicken', 1),
+
+    ('holiday_sample', NULL, 'dinner', 'Dinner / turntable',
+        'Beef Stroganoff', 1);
 ```
 
 ---
@@ -467,8 +470,8 @@ INSERT INTO metadata (
 VALUES
     (
         'dataset_version',
-        'mvp_v1_2',
-        'Corrected weekday breakfast mapping and removed redundant weekend breakfast entries.'
+        'mvp_v1_3',
+        'Added the provisional holiday and break dinner sample (copied from Saturday dinner).'
     ),
     (
         'timezone',
@@ -491,9 +494,9 @@ VALUES
         'Lite Lunch hours exist; food menu not supplied'
     ),
     (
-        'holiday_dinner_fallback',
-        'day_of_week_dinner',
-        'Test assumption only, not verified holiday dinner menu'
+        'holiday_dinner_source',
+        'saturday_sample',
+        'Provisional holiday and break dinner menu'
     ),
     (
         'virtual_classes_hours_status',
@@ -506,10 +509,10 @@ VALUES
 
 # 7. Indexing Strategy
 
-The runnable schema uses only the indexes needed for the current 223-row MVP dataset:
+The runnable schema uses only the indexes needed for the current 227-row MVP dataset:
 
 - `uq_menus_weekly_item`: prevents repeated food names (ignoring case/outer spaces) within one weekday/meal/station, while permitting the same dish on multiple days.
-- `uq_menus_holiday_sample_item`: prevents repeats in the shared holiday brunch sample without relying on a nullable weekday column.
+- `uq_menus_holiday_sample_item`: prevents repeats in the shared holiday brunch and dinner samples without relying on a nullable weekday column.
 - `idx_menus_lookup`: supports recurring day/meal/station retrieval with predictable ordering.
 - The `UNIQUE (schedule_type, meal_type)` constraint indexes `hours` lookups automatically.
 - The holiday overlap exclusion constraint adds a GiST index; `idx_holidays_date_range` supports the simple inclusive date lookup.
@@ -668,17 +671,16 @@ This is provisional MVP data and should be treated according to the metadata and
 
 ---
 
-## 10.3 Holiday / break dinner fallback
+## 10.3 Holiday / break dinner lookup
 
-The current metadata contains:
+The current dataset contains a provisional holiday dinner sample, copied from Saturday dinner (owner decision N-16, 2026-10-24):
 
 ```text
-holiday_dinner_fallback = day_of_week_dinner
+menu_scope = holiday_sample
+meal_type = dinner
 ```
 
-and explicitly notes that this is a **test assumption**, not a verified holiday dinner menu.
-
-If that MVP fallback remains enabled, dinner is loaded from the weekly dinner corresponding to the requested calendar weekday:
+Query:
 
 ```sql
 SELECT
@@ -686,15 +688,12 @@ SELECT
     food_item,
     display_order
 FROM menus
-WHERE menu_scope = 'weekly'
-  AND day_of_week = $1
+WHERE menu_scope = 'holiday_sample'
   AND meal_type = 'dinner'
 ORDER BY station, display_order, food_item;
 ```
 
-This fallback should remain isolated in business logic so it can be replaced when verified holiday dinner data becomes available.
-
-It must not be presented in code as if it were confirmed source data.
+The same rule as holiday brunch applies: query only `holiday_sample` rows, never weekly Saturday (`day_of_week = 6`) rows. The metadata key `holiday_dinner_source = saturday_sample` only records where the sample came from. Replies must label this menu as a sample that may change, and the rows are replaced when a verified holiday dinner menu is supplied (N-26).
 
 ---
 
@@ -886,7 +885,7 @@ timezone
 menu_recurrence
 lite_lunch_menu_status
 holiday_brunch_source
-holiday_dinner_fallback
+holiday_dinner_source
 virtual_classes_hours_status
 ```
 
@@ -923,7 +922,7 @@ This order prevents normal weekday logic from overriding a break or holiday.
 
 | Table | Runtime responsibility |
 |---|---|
-| `menus` | Weekly menu lookup, provisional holiday brunch lookup, and food-item search |
+| `menus` | Weekly menu lookup, provisional holiday brunch and dinner lookup, and food-item search |
 | `hours` | Serving times and open/closed calculations for weekday, weekend, holiday, and break schedules |
 | `holidays` | Date-range overrides that determine whether a date uses `holiday` or `break` rules |
 | `metadata` | Dataset-level MVP configuration, assumptions, provisional-status information, and timezone |
@@ -1010,9 +1009,9 @@ The menu table only needs the recurring day/meal structure and menu scope.
 
 The current dataset explicitly states that the Lite Lunch food menu was not supplied.
 
-### Do not treat provisional holiday dinner fallback as verified data
+### Do not treat the provisional holiday dinner sample as verified data
 
-The fallback is documented in metadata as an MVP test assumption.
+The holiday and break dinner rows are a copy of Saturday dinner, documented in metadata as a provisional sample. Replies must label it as a sample menu.
 
 ### Do not hard-code holiday ranges in Python
 
@@ -1098,7 +1097,7 @@ This schema now matches the structure and rules in the corrected Aggrey MVP data
 - `updated_at` changes automatically on row updates via triggers.
 - Database `time` means a *meal serving window*, not necessarily building opening hours. The app should say whether a meal is being served, rather than claiming the building is open outside listed windows.
 - The source provides **Lite Lunch serving hours only**, not a food menu. Do not generate Lite Lunch menu rows.
-- `holiday_dinner_fallback=day_of_week_dinner` is an **unverified demonstration assumption**. Do not state such food as officially served. Prefer saying verified holiday dinner menu information is unavailable in public-facing replies until it is provided.
+- The holiday and break dinner (`holiday_sample` dinner rows, `holiday_dinner_source=saturday_sample`) is a **provisional copy of Saturday dinner**, chosen by the project owner (N-16). Do not state it as officially served; label it as a sample menu that may change until a verified menu is provided.
 - The virtual class/exam period's break hours remain **provisional**. The product must label them as such if shown to students.
 - No distinct summer-break dates are supplied. `summer_operations=reduced_schedule` documents intent, but **does not authorize an automatic summer override** without dates.
 - The four tables contain **no student-message or conversation-state storage**. Short-lived follow-up context, retry deduplication, and deployment strategy belong to the FastAPI messaging module, not to these four dining tables.

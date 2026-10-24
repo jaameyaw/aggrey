@@ -2,9 +2,9 @@
 
 > Markdown mirror of `Aggrey_MVP_Data.xlsx`. All rows and source column names are preserved. The Excel workbook remains the canonical import source; this file is for developer review, search, and understanding, not a substitute for validated database imports.
 
-**Dataset version:** `mvp_v1_2`  
-**Menu model:** repeating weekly menu by ISO weekday (Monday = 1, Sunday = 7). Special brunch sample rows have a blank `day_of_week`.  
-**Data:** 223 menu records, 10 hours rows, 11 holiday/break ranges, 11 metadata rows.
+**Dataset version:** `mvp_v1_3`  
+**Menu model:** repeating weekly menu by ISO weekday (Monday = 1, Sunday = 7). Holiday sample rows (brunch and dinner) have a blank `day_of_week`.  
+**Data:** 227 menu records, 10 hours rows, 11 holiday/break ranges, 11 metadata rows.
 
 ## Contents
 
@@ -15,7 +15,7 @@
 
 ## Menus
 
-`menu_scope = weekly` repeats each week. `holiday_sample` is one shared provisional brunch menu, not assigned to any individual weekday. A row is one food item, and **all rows matching the requested day, meal, and station** belong to the same available menu.
+`menu_scope = weekly` repeats each week. `holiday_sample` is one shared provisional brunch menu and one shared provisional dinner menu (copied from Saturday), not assigned to any individual weekday. A row is one food item, and **all rows matching the requested day, meal, and station** belong to the same available menu.
 
 | menu_scope | day_of_week | meal_type | station | food_item | display_order |
 | --- | --- | --- | --- | --- | --- |
@@ -242,6 +242,10 @@
 | holiday_sample |  | brunch | Pizza | Cheese Pizza | 1 |
 | holiday_sample |  | brunch | Pizza | Pepperoni Pizza | 2 |
 | holiday_sample |  | brunch | Pizza | Roasted Vegetable Pizza | 3 |
+| holiday_sample |  | dinner | Dinner / turntable | Beef Stroganoff | 1 |
+| holiday_sample |  | dinner | Dinner / turntable | Butter Egg Noodle | 2 |
+| holiday_sample |  | dinner | Dinner / turntable | Steamed Broccoli | 3 |
+| holiday_sample |  | dinner | Dinner / turntable | Oregano Roasted Carrots | 4 |
 
 ## Hours
 
@@ -284,13 +288,13 @@ These are dataset settings and documented assumptions, not food offerings.
 
 | key | value | notes |
 | --- | --- | --- |
-| dataset_version | mvp_v1_2 | Corrected weekday breakfast mapping and removed redundant weekend breakfast entries; other source data unchanged. |
+| dataset_version | mvp_v1_3 | Added the provisional holiday and break dinner sample (copied from Saturday dinner); other source data unchanged from mvp_v1_2. |
 | timezone | America/New_York | College local time |
 | menu_recurrence | weekly | Repeat weekly without tying menu items to calendar dates |
 | update_policy | manual | Until manager provides an update process |
 | lunch_station_count | 5 | Main hot-food, Special, Grill / sandwich, Pasta, Pizza |
 | holiday_brunch_source | saturday_sample | Provisional holiday brunch menu |
-| holiday_dinner_fallback | day_of_week_dinner | Test assumption only, not verified holiday dinner menu |
+| holiday_dinner_source | saturday_sample | Provisional holiday and break dinner menu |
 | lite_lunch_menu_status | missing | Lite Lunch hours exist; food menu not supplied |
 | thanksgiving_christmas_hours_rule | break | Same serving hours as Fall Break |
 | virtual_classes_hours_status | break_template_provisional | Virtual classes and exams use the break schedule for MVP testing; manager confirmation is still pending. |
@@ -300,6 +304,6 @@ These are dataset settings and documented assumptions, not food offerings.
 
 - PostgreSQL (`menus`, `hours`, `holidays`, `metadata`) is the source of truth at runtime. Use the Excel workbook or a controlled seed process for imports, **not manual copying from this Markdown table**.
 - Do not attach service dates to weekly menu rows. Resolve the local date, select its ISO weekday, then query all matching rows.
-- The `holiday_dinner_fallback` is an unverified MVP **test assumption**. Do not describe the fallback dinner menu as confirmed.
+- The holiday and break dinner (`holiday_sample` dinner rows) is a provisional copy of Saturday dinner. Always label it as a sample menu; do not describe it as confirmed.
 - Lite Lunch serving hours exist, but its food menu has not been supplied.
 - A provisional override is still an override in the current seed data, but student-facing messages must not imply it was manager-confirmed.

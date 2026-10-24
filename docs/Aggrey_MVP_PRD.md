@@ -65,7 +65,7 @@ The MVP must support the following:
 - If a requested meal is valid, Aggrey should return **all** stored items for that day and meal, grouped by station where appropriate. The weekly menu repeats without service dates.
 - For a generic weekday lunch question, ask which station: Main hot-food, Special, Grill / sandwich, Pasta, or Pizza. If the student does not know, give a one-line explanation of the stations followed by the lunch menu grouped by station; if they request everything, show the complete lunch menu grouped by station.
 - A direct station question should be answered without requiring the station question again. Short follow-ups such as "Pizza" should use the pending lunch context.
-- On holidays and breaks, use the reusable `holiday_sample` brunch menu. The weekday dinner fallback in metadata is **unverified sample behavior** and must not be stated as a confirmed holiday dinner menu.
+- On holidays and breaks, use the reusable `holiday_sample` brunch and dinner menus. The holiday dinner sample is a copy of Saturday dinner (N-16). Both samples are **provisional**: label them as sample menus and never state them as confirmed holiday menus.
 - If a schedule is provisional (for example, virtual classes/exams), do not imply its serving hours are confirmed.
 - Holiday and academic-break date ranges must be checked before applying normal weekday or weekend schedules.
 - Aggrey must never invent menu items, hours, dates, or holiday status.
@@ -87,7 +87,7 @@ If today is an official holiday, Aggrey should respond with the meaning of:
 | FR-3 | Meal detection | The backend identifies breakfast, lunch, Lite Lunch, dinner, or brunch when stated or safely inferred. |
 | FR-4 | Date resolution | The backend resolves supported date expressions into a calendar date before querying dining data. |
 | FR-5 | Schedule selection | The backend checks stored holiday/break date ranges first, then weekend/weekday, and applies the matching stored serving hours. |
-| FR-6 | Menu lookup | The backend retrieves **all** rows for the applicable recurring weekday and meal, or the reusable holiday brunch sample. |
+| FR-6 | Menu lookup | The backend retrieves **all** rows for the applicable recurring weekday and meal, or the reusable holiday brunch or dinner sample. |
 | FR-7 | Hours lookup | The backend returns stored start/end times for the relevant meal or cafeteria schedule. |
 | FR-8 | Food-item lookup | The backend searches food names across applicable meals and stations, reporting the matching meal/station without guessing. |
 | FR-9 | Missing data | If required dining data is unavailable, the system says the information is unavailable instead of guessing. |
@@ -115,7 +115,7 @@ For the MVP, dining data is loaded from the structured menu and hours tables alr
 - Holiday data identifies `name`, inclusive `start_date` and `end_date`, `schedule_type`, and `verification_status`. This includes explicitly listed academic breaks.
 - Meal-type values should be normalized to: breakfast, lunch, lite_lunch, dinner, brunch.
 - Dates and times should be stored in consistent database formats. Resolve requests in the `America/New_York` timezone.
-- The MVP workbook has four sheets: `menus`, `hours`, `holidays`, and `metadata`; its data must match the PostgreSQL schema. `holiday_dinner_fallback` is a provisional test assumption, not verified food data.
+- The MVP workbook has four sheets: `menus`, `hours`, `holidays`, and `metadata`; its data must match the PostgreSQL schema. The `holiday_sample` dinner rows (`holiday_dinner_source = saturday_sample`) are a provisional copy of Saturday dinner, not verified holiday food data.
 
 ### Source-of-truth rule
 
@@ -143,7 +143,7 @@ PostgreSQL is the runtime source of truth for answers. If the needed record is n
 The MVP is build-complete when all of the following are true:
 
 - A test student can send a text to the Aggrey number and receive a response.
-- A message such as "What's for dinner?" returns **every** stored dinner item for the resolved weekday or a clearly labeled provisional fallback where applicable.
+- A message such as "What's for dinner?" returns **every** stored dinner item for the resolved weekday or the clearly labeled provisional holiday dinner sample on holidays and breaks.
 - Hours questions return the correct stored meal start/end times.
 - Food-item questions are checked against stored menu data rather than guessed.
 - Saturday and Sunday requests use brunch + dinner rules.
@@ -152,7 +152,7 @@ The MVP is build-complete when all of the following are true:
 - Generic weekday lunch questions prompt for a station; named station requests work directly; "show everything" returns all five stations; follow-up replies retain the selected lunch context.
 - Weekend and holiday brunch use the correct corresponding menu scope, and the holiday brunch sample is not mistaken for an ordinary weekday menu.
 - Lite Lunch hours are available but missing Lite Lunch food data produces an explicit unavailable-data response.
-- Provisional virtual-class hours and any holiday dinner fallback are not presented as confirmed source facts.
+- Provisional virtual-class hours and the holiday brunch and dinner samples are not presented as confirmed source facts.
 - The landing page displays the number and its click-to-text link works on supported devices.
 - Missing menu/hours data produces an explicit unavailable-data response.
 - Unsupported or unclear messages do not cause fabricated answers.
@@ -184,6 +184,6 @@ Do not guess these values in implementation. Confirm them from the project data 
 - Keep database access separate from message parsing and response formatting.
 - Represent schedule rules in code that can be unit tested independently of Sendblue.
 - Use deterministic rule-based parsing for the MVP. Do not call an LLM.
-- Use database data for facts. Never hard-code menu items or invent missing information; clearly label any provisional dinner fallback or unconfirmed hours.
+- Use database data for facts. Never hard-code menu items or invent missing information; clearly label the provisional holiday menus and any unconfirmed hours.
 - Prefer simple, readable implementation over premature abstraction.
 - Add tests before expanding supported phrasing. A phrase should be supported only when its expected behavior is clear.
