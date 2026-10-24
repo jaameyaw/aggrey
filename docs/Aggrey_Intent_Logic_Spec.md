@@ -107,7 +107,7 @@ Rules:
 - numeric dates (`11/25`, `11-25`)
 - "next week," "this week," "this weekend," "weekend"
 
-This matters because "What's for lunch on Friday?" must not be answered with today's lunch.
+This matters because "What's for lunch on 11/25?" must not be answered with today's lunch.
 
 ### 3.3 Station aliases
 
@@ -182,7 +182,7 @@ If you approve this list, the PRD's FR-2 should note that `open_now` is part of 
 | 2 | Whole message is an opt-out keyword | "STOP" | `opt_out` |
 | 3 | Whole message is a help keyword or greeting | "help", "hi" | `help` |
 | 4 | A context is pending and the message is a short answer to it (section 8) | "Pizza" after the station question | `follow_up` |
-| 5 | Unsupported date phrase present (section 3.2) | "What's for lunch Friday?" | Intent is still detected by rules 6–9, but the reply asks the student to rephrase the date |
+| 5 | Unsupported date phrase present (section 3.2) | "What's for lunch 11/25?" | Intent is still detected by rules 6–9, but the reply asks the student to rephrase the date |
 | 6 | `open_now` trigger, and no "what time" or "when" next to a meal word | "Is the caf open?", "Is lunch still going?" | `open_now` |
 | 7 | `hours` trigger | "What time is brunch?", "When does lunch end?" | `hours` |
 | 8 | `food_lookup` trigger with a food keyword left after removing filler words | "Do they have wings today?" | `food_lookup` |

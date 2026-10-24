@@ -332,7 +332,7 @@ The database developer works on the `database/supabase` branch (N-39).
 **Depends on:** M1.
 **Needs from you:** N-23, N-25, N-26, N-27, N-28. Import can start with current data; these answers may change data later.
 
-A `db/seed.sql` already exists (added 2026-10-24). It says it was generated from the workbook, and its row counts match `mvp_v1_2`, but the script that produced it is not in the repo. Use it for M1 testing now. This module adds the generator so future data changes are repeatable and reviewable.
+A `db/seed.sql` already exists (added 2026-10-24). It says it was generated from the workbook, and its row counts match `mvp_v1_3` (227 / 10 / 11 / 11), but the script that produced it is not in the repo. Use it for M1 testing now. This module adds the generator so future data changes are repeatable and reviewable.
 
 **Steps**
 
