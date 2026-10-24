@@ -2,7 +2,7 @@
 
 **Status:** Draft for review. Not approved until sign-off is recorded (roadmap N-40).
 **Drafted:** October 24, 2026
-**Dataset:** `mvp_v1_2`
+**Dataset:** `mvp_v1_3`
 **Sources:** `Aggrey_MVP_PRD.md`, `Aggrey_MVP_Database_Schema.md`, `Aggrey_Technical_Architecture.md`, `roadmap.md` Section 1 answers, and the dining data.
 
 Aggrey is rule-based. This document is the complete list of what Aggrey understands and how it answers. If a behavior is not written here, Aggrey does not support it. Code, tests, and the phrase corpus must match this document. To change behavior, change this document first, then the corpus, then the code.
@@ -15,7 +15,7 @@ Every rule carries one of these tags:
 - **Proposed** — a suggestion in this draft. It becomes decided when you sign off (N-40). Change or reject it before signing.
 - **Open (N-xx)** — waiting on a roadmap question. Code must not assume an answer.
 
-Example times in this document come from dataset `mvp_v1_2`. Code always reads times, menus, stations, and holidays from the database and never hard-codes them.
+Example times in this document come from dataset `mvp_v1_3`. Code always reads times, menus, stations, and holidays from the database and never hard-codes them.
 
 ---
 
@@ -94,16 +94,15 @@ Rules:
 | Phrase | Meaning | Status |
 | --- | --- | --- |
 | *(no date phrase)* | Today in `America/New_York` | **Decided** (N-12) |
-| today | Today | **Proposed** (N-13 suggested minimum; PRD names today) |
-| tonight | Today. If no meal is named, the meal is dinner. | **Proposed** (N-13) |
-| tomorrow, tmrw, tmr, tomorow | Today plus one day | **Proposed** (N-13; PRD names tomorrow) |
-| Weekday names (monday, mon, tuesday, tues, ...) | Not yet decided whether this means this week's or next week's day | **Open (N-13)** |
-| Explicit dates (11/25, nov 25, november 25th) | Not yet decided | **Open (N-13)** |
+| today | Today | **Decided** (N-13) |
+| tonight | Today. If no meal is named, the meal is dinner. | Phrase **Decided** (N-13); "dinner" default **Proposed** |
+| tomorrow, tmrw, tmr, tomorow | Today plus one day | Phrase **Decided** (N-13); spelling variants **Proposed** |
+| Weekday names (monday, mon, tuesday, tues, ...) | The next upcoming day with that name: today if today has that name, otherwise the next one. Never a past date. | **Decided** (N-13); abbreviations **Proposed** |
+| Explicit dates (11/25, nov 25, november 25th) | Not supported in the first version | **Decided** (N-13) |
 
-**Recognized but unsupported.** If the message contains any of the following, and the phrase is not approved in the table above, Aggrey asks the student to rephrase and lists the supported date words. It never answers for a different date. **Proposed.**
+**Recognized but unsupported.** If the message contains any of the following, Aggrey asks the student to rephrase and lists the supported date words. It never answers for a different date. **Proposed.**
 
 - yesterday, last night
-- weekday names (until N-13 approves them)
 - month names and abbreviations
 - numeric dates (`11/25`, `11-25`)
 - "next week," "this week," "this weekend," "weekend"
@@ -272,13 +271,13 @@ The finished-meal rule only applies when the date is today. "What's for lunch to
 ### 6.5 Provisional data
 
 - **Decided** (PRD 3): provisional hours and menus must never be presented as confirmed.
-- The holiday brunch menu (`menu_scope = 'holiday_sample'`) is always labeled as a sample menu. **Decided** (PRD 3).
+- The holiday brunch and dinner menus (`menu_scope = 'holiday_sample'`) are always labeled as sample menus. **Decided** (PRD 3, N-16).
 - **Open (N-43):** which `verification_status` values make an override provisional. Suggested: only `pending_confirmation` (currently the Virtual Classes, Reading Day & Exams period, 2026-11-30 to 2026-12-12). Hours on those dates are labeled "not yet confirmed."
 
 ### 6.6 Holiday and break menus
 
 - **Brunch — Decided** (PRD FR-6, roadmap Section 2 item 7): query `menu_scope = 'holiday_sample'` only. Never query or copy Saturday (`day_of_week = 6`) rows. The metadata key `holiday_brunch_source = saturday_sample` records where the sample came from and is never used to choose rows.
-- **Dinner — Open (N-16):** either (a) show the weekday dinner for that calendar weekday, labeled as unconfirmed, or (b) give dinner hours and say the holiday dinner menu isn't available. Until N-16 is answered, code must support neither.
+- **Dinner — Decided** (N-16, answered 2026-10-24): the holiday and break dinner is a copy of Saturday dinner, stored as `holiday_sample` dinner rows (dataset `mvp_v1_3`). Query `menu_scope = 'holiday_sample'` and `meal_type = 'dinner'` only, exactly like brunch. Never query Saturday's `weekly` rows at runtime, and never use the calendar weekday's dinner. The metadata key `holiday_dinner_source = saturday_sample` records where the sample came from and is never used to choose rows. The reply labels it as a sample menu that may change (6.5).
 
 ### 6.7 Missing data
 
@@ -312,7 +311,7 @@ The finished-meal rule only applies when the date is today. "What's for lunch to
 | Weekday lunch, "everything," "all," "full menu" | Every station, grouped by station | **Decided** (PRD FR-12, N-19) |
 | Brunch (weekend) | All brunch items grouped by station, with no station question | **Open (N-42)**, suggested behavior shown |
 | Brunch (holiday or break) | `holiday_sample` items grouped by station, labeled as a sample menu | **Decided** (6.6) |
-| Dinner (holiday or break) | Follows N-16 | **Open (N-16)** |
+| Dinner (holiday or break) | `holiday_sample` dinner items, labeled as a sample menu | **Decided** (6.6, N-16) |
 | Breakfast, dinner (weekday or weekend) | All items for that day and meal | **Decided** (PRD FR-6) |
 | Station named for a non-lunch meal ("What's at the grill for brunch?") | That station's items for that meal | **Proposed** |
 
@@ -341,14 +340,14 @@ For today, using section 6.4:
 
 | Situation | Reply meaning | Status |
 | --- | --- | --- |
-| A meal is being served | "\<Meal\> is being served until \<end\>." | **Open (N-15)**, suggested wording from the roadmap |
+| A meal is being served | "Yes, \<meal\> is being served until \<end\>." | **Decided** (N-15) |
 | Lite Lunch is being served | Same, plus the Lite Lunch note | **Decided** (owner note) |
-| Between meals | "No meal is being served right now. \<Next meal\> starts at \<start\>." | **Open (N-15)**, suggested wording |
-| Before the first meal | "\<First meal\> starts at \<start\>." | **Proposed** |
-| After the last meal | "No more meals are being served today." | **Proposed** (matches the N-14 answer for finished meals) |
+| Between meals | "No, the caf is closed right now. \<Next meal\> starts at \<start\>." | **Decided** (N-15) |
+| Before the first meal | "No, the caf is closed right now. \<First meal\> starts at \<start\>." | **Decided** (N-15) |
+| After the last meal | "No, the caf is closed." Nothing about tomorrow. | **Decided** (N-15 example of 9 PM; matches N-14) |
 | Meal named ("Is lunch still open?") | Answer for that meal only: being served until \<end\>, not started yet, or over (then the 6.4 rule) | **Proposed** |
 
-The `hours` table stores serving windows, not building hours (schema doc section 20). Replies talk about meals being served, never about the building being open. **Decided** (roadmap N-15 framing).
+The `hours` table stores serving windows, not building hours (schema doc section 20). Aggrey treats "the caf is open" as "a meal is being served": yes while a serving window is running, "closed" outside every window. It never claims the caf is open outside the stored windows. **Decided** (N-15, answered 2026-10-24).
 
 ### 7.4 `food_lookup`
 
@@ -357,7 +356,7 @@ The `hours` table stores serving windows, not building hours (schema doc section
 | Step | Rule | Status |
 | --- | --- | --- |
 | 1. Keyword | Remove trigger phrases, date words, meal words, and filler words (3.4). What is left is the keyword. If nothing is left, see section 5 notes. | **Proposed** |
-| 2. Scope | Search only meals served on that day's schedule. If a meal is named, search only that meal. Weekday and weekend use `weekly` rows for that weekday. Holiday and break brunch use `holiday_sample`; holiday and break dinner follows N-16. Lite Lunch has no data and is never searched. | **Decided** (schema doc section 12, PRD FR-8) |
+| 2. Scope | Search only meals served on that day's schedule. If a meal is named, search only that meal. Weekday and weekend use `weekly` rows for that weekday. Holiday and break brunch and dinner use `holiday_sample` (6.6). Lite Lunch has no data and is never searched. | **Decided** (schema doc section 12, PRD FR-8) |
 | 3. Named meal not served | Say that meal isn't served that day, then search the meals that are | **Proposed** |
 | 4. Match | Section 9 | **Decided** that rules live here (N-17); rules themselves **Proposed** |
 | 5. Found | List every match as meal, station, and item, grouped by meal then station | **Decided** (PRD FR-8) |
@@ -443,7 +442,7 @@ Whole-word matching avoids false hits from plain substring search, such as "ham"
 
 ### 9.2 Results against the current data
 
-Checked against all 223 menu rows on 2026-10-24.
+Checked against all 223 menu rows of `mvp_v1_2` on 2026-10-24. The four holiday dinner rows added in `mvp_v1_3` repeat Saturday dinner items, so these results are unchanged.
 
 | Keyword | Matches (any day) | Comment |
 | --- | --- | --- |
@@ -509,9 +508,6 @@ Items this spec waits on. Each is in roadmap Section 1.
 | ID | Topic | Where it applies here |
 | --- | --- | --- |
 | N-11 | STOP and HELP handling | 3.5, 7.8 |
-| N-13 | Supported date phrases | 3.2 |
-| N-15 | "Is the caf open?" wording | 7.3 |
-| N-16 | Holiday and break dinner | 6.6, 7.1, 7.4 |
 | N-18 | Reply wording, emojis, station order | 10 |
 | N-20 | How long a pending question lasts | 8 |
 | N-22 | First message from a new number | 7.6 |
@@ -564,8 +560,8 @@ Expected readings for the test suite. Once `backend/` exists, this table becomes
 | 33 | I don't know *(after station question)* | follow_up | lunch | saved | all | | Explanation, then all stations |
 | 34 | everything *(after station question)* | follow_up | lunch | saved | all | | |
 | 35 | grill *(no pending question)* | menu | lunch or brunch | today | Grill / sandwich | | Section 7.5 |
-| 36 | What's for lunch Friday? | menu | lunch | unsupported | | | Ask to rephrase until N-13 |
-| 37 | What's for dinner 11/25? | menu | dinner | unsupported | | | Ask to rephrase until N-13 |
+| 36 | What's for lunch Friday? | menu | lunch | next Friday (today if Friday) | | | N-13 |
+| 37 | What's for dinner 11/25? | menu | dinner | unsupported | | | Ask to rephrase (N-13) |
 | 38 | What was for lunch yesterday | menu | lunch | unsupported | | | Ask to rephrase |
 | 39 | lunch or dinner? | menu | ask | today | | | Two meals named |
 | 40 | asdfgh | unclear | | | | | |
@@ -587,7 +583,7 @@ Every row in `roadmap.md` Section 6 maps to a rule here.
 | 7, 8, 14 | 6.3 meal not served |
 | 9, 13, 15 | 7.2 hours |
 | 10, 23, 34 | 6.2 schedule, 6.3, 6.6 holiday brunch |
-| 11 | 6.6 dinner (N-16) |
+| 11 | 6.6 holiday dinner |
 | 12 | 6.5 provisional (N-43) |
 | 16 | 6.7 Lite Lunch menu |
 | 17, 18, 19 | 7.4, 9 food matching |

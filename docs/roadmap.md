@@ -2,7 +2,7 @@
 
 **Status:** M0 (repository foundation) done on 2026-10-24, except step 1 (deferred) and the GitHub settings in step 8. No application code, `verify.sql`, or deployments exist yet. `db/schema.sql` and `db/seed.sql` were added on 2026-10-24.
 **Created:** October 24, 2026
-**Last updated:** October 24, 2026 (answers to N-03, N-12, N-14, N-17, N-19; new module MS and its draft spec; new questions N-40 to N-44)
+**Last updated:** October 24, 2026 (answers to N-03, N-12, N-13, N-14, N-15, N-16, N-17, N-19; holiday dinner sample added as dataset `mvp_v1_3`; new module MS and its draft spec; new questions N-40 to N-44)
 **Applies to:** the MVP defined in `Aggrey_MVP_PRD.md`, `Aggrey_Technical_Architecture.md`, and `Aggrey_MVP_Database_Schema.md`.
 
 This roadmap breaks the MVP into modules. Each module lists its goal, dependencies, the inputs required from the project owner, step-by-step work, deliverables, and a definition of done. It adds no product features beyond the PRD.
@@ -55,10 +55,10 @@ Where an option is labeled "suggested," it is a proposal for you to accept or re
 | ID | Question | Blocks |
 | --- | --- | --- |
 | N-12 | **Default date.** If a student does not mention a date ("What's for dinner?"), should Aggrey use today in `America/New_York`? **Answer (2026-10-24):** Yes. With no date in the message, use today's date in `America/New_York` (read from `metadata.timezone`), never the server's UTC date. | M4, M6 |
-| N-13 | **Supported date phrases.** PRD open decision 1. List exactly which phrases the first version must support. Suggested minimum: "today", "tonight", "tomorrow", and weekday names ("Monday"). Do explicit dates like "11/25" or "Nov 25" need support? Should "Monday" mean the next Monday or this week's Monday? | M4, M6 |
+| N-13 | **Supported date phrases.** PRD open decision 1. List exactly which phrases the first version must support. Suggested minimum: "today", "tonight", "tomorrow", and weekday names ("Monday"). Do explicit dates like "11/25" or "Nov 25" need support? Should "Monday" mean the next Monday or this week's Monday? **Answer (2026-10-24):** support "today", "tonight", "tomorrow", and weekday names. A weekday name means the next upcoming day with that name: today if today has that name, otherwise the next one, never a past date. Explicit dates ("11/25", "Nov 25") are not supported in the first version. | M4, M6 |
 | N-14 | **Past meal today.** If a student asks "What's for lunch?" after lunch ended, should Aggrey say lunch is over and still show today's lunch, or point them to the next meal? **Answer (2026-10-24):** Say the meal is over and point to the next meal and its serving time, for example "Lunch is over. Dinner is served 5:00 to 8:00 PM." **Follow-ups answered (2026-10-24):** (a) Between 2:00 and 3:00 PM on a weekday, the next meal is Lite Lunch. The reply notes that Lite Lunch comes after the main lunch, so most lunch food is usually finished. (b) After the last meal of the day, Aggrey only says the meal is over for today. It does not point to tomorrow. (c) The reply gives the next meal's time only, not its menu. | M6 |
-| N-15 | **"Is the caf open?"** The `hours` table stores *meal serving windows*, not building hours (schema section 20). Approve the reply meaning: "Lunch is being served until 2:00 PM" or "No meal is being served right now. Dinner starts at 5:00 PM." | M5, M6 |
-| N-16 | **Holiday and break dinner.** The PRD allows a labeled weekday-dinner fallback. The schema doc says to prefer "verified holiday dinner menu is unavailable." Choose one: (a) show the weekday dinner menu clearly labeled as unconfirmed, or (b) give dinner hours only and say the menu is unavailable. | M5, M6 |
+| N-15 | **"Is the caf open?"** The `hours` table stores *meal serving windows*, not building hours (schema section 20). Approve the reply meaning: "Lunch is being served until 2:00 PM" or "No meal is being served right now. Dinner starts at 5:00 PM." **Answer (2026-10-24):** it depends on the time asked. During a serving window: "Yes, lunch is being served until 2:00 PM." Outside every window, for example at 9:00 PM: "No, the caf is closed." **Follow-up answered (2026-10-24):** between meals and before the first meal, the reply also gives the next meal's start time, for example "No, the caf is closed right now. Lunch starts at 11:00 AM." After the last meal it only says the caf is closed. | M5, M6 |
+| N-16 | **Holiday and break dinner.** The PRD allows a labeled weekday-dinner fallback. The schema doc says to prefer "verified holiday dinner menu is unavailable." Choose one: (a) show the weekday dinner menu clearly labeled as unconfirmed, or (b) give dinner hours only and say the menu is unavailable. **Answer (2026-10-24):** neither. Copy Saturday dinner into the data as the holiday and break dinner, labeled as a sample menu like holiday brunch. Applied as dataset `mvp_v1_3`: four `holiday_sample` dinner rows, the schema check now allows `holiday_sample` dinner, and the metadata key `holiday_dinner_fallback` is replaced by `holiday_dinner_source = saturday_sample`. Replace the rows if a real holiday dinner menu arrives (N-26). | M5, M6 |
 | N-17 | **Food matching.** "Do they have wings today?" matches nothing in the current data. Approve the matching rules: case-insensitive partial match, basic plurals ("wing" vs "wings"), and "&" vs "and". Should there be a synonym list (for example "mac" matches "Mac & Cheese")? If yes, who maintains it? **Answer (2026-10-24):** Food matching rules and any synonym list are defined in the Intent and Logic Specification (module MS) and approved with it (N-40). Code must not add matching rules or synonyms that are not in the approved spec. | MS, M5, M6 |
 | N-18 | **Reply copy and tone.** Approve the reply templates produced in M6 (wording, emojis yes or no, 12-hour time format, and how stations are shown). | M6 |
 | N-19 | **Long replies.** "Show everything" for weekday lunch is about 20+ items. After checking Sendblue's message length limits, should a long reply be one message or split into several? **Answer (2026-10-24):** Avoid long unrequested replies. A generic "What's for lunch?" asks which station. If the student does not know, Aggrey gives the lunch menu by station. Replies that list several stations are grouped by station. If a reply exceeds Sendblue's length limit (M7 step 1), split it only between stations, never inside one station. **Follow-up answered (2026-10-24):** "I don't know" gets a one-line explanation of the stations, then the lunch menu grouped by station. The PRD is updated to match. | M6, M7 |
@@ -107,12 +107,12 @@ Resolve these before or during M0. Do not silently work around them.
 1. ~~`Aggrey_Technical_Architecture.md` refers to `Aggrey_MVP_PRD_Build_Ready.md`.~~ **Fixed 2026-10-24 (M0):** the reference now points to `Aggrey_MVP_PRD.md`.
 2. The architecture doc refers to `db/schema.sql`, `db/seed.sql`, and `db/verify.sql`. **Updated 2026-10-24:** `schema.sql` and `seed.sql` were added and moved into `db/` in M0. Checked on 2026-10-24:
    - `schema.sql` is identical to the SQL in `Aggrey_MVP_Database_Schema.md` section 4.
-   - `seed.sql` contains 223 menu, 10 hours, 11 holiday, and 11 metadata rows, which matches dataset `mvp_v1_2`.
+   - `seed.sql` contains 223 menu, 10 hours, 11 holiday, and 11 metadata rows, which matches dataset `mvp_v1_2`. **Updated 2026-10-24 (N-16):** dataset `mvp_v1_3` adds four holiday dinner rows, so `seed.sql` now has 227 menu rows. `schema.sql` and the schema doc section 4 were changed together and are still identical.
    - `verify.sql` still does not exist (M1 creates it).
    - The script that generated `seed.sql` from the workbook is not in the repo (M2 adds one).
    - Both files are now in `db/` (M0, N-32).
 3. The PRD mentions a "future-development list." It is not in the repo. Nothing from it may be built until it exists and is approved.
-4. Holiday and break dinner wording differs between the PRD and the schema doc. Resolved by N-16.
+4. ~~Holiday and break dinner wording differs between the PRD and the schema doc.~~ **Resolved 2026-10-24 (N-16):** both now describe the `holiday_sample` dinner copied from Saturday.
 5. ~~The README says "iMessage." The PRD says "text" via Sendblue.~~ **Resolved 2026-10-24 (N-03):** SMS is supported through Sendblue's fallback. The README now says "text."
 6. ~~All project documents, `schema.sql`, `seed.sql`, and this roadmap are untracked in Git.~~ **Fixed 2026-10-24 (M0):** committed as "docs: add MVP specification."
 7. **Confirmed 2026-10-24:** the metadata key `holiday_brunch_source = saturday_sample` only records where the holiday sample came from. The runtime menu scope is `holiday_sample`. Code must query `menu_scope = 'holiday_sample'` and must never query or copy Saturday (`day_of_week = 6`) rows for a holiday or break. M5 implements this rule and tests it.
@@ -267,7 +267,7 @@ The database developer works on the `database/supabase` branch (N-39).
 **Goal:** one approved document that says exactly what Aggrey understands and how it answers. Aggrey is rule-based, so the rules must be written down before they are coded. Without this document, each developer would decide behavior in code, and the tests would have nothing to check against.
 **Depends on:** nothing (documents only). Start now, in parallel with M0–M3.
 **Status:** first draft written 2026-10-24 as `docs/Aggrey_Intent_Logic_Spec.md`. Awaiting review and sign-off (N-40).
-**Needs from you:** N-11, N-13, N-15, N-16, N-18, N-20, N-21, N-22, N-41, N-42, N-43, N-44, and final sign-off N-40. N-12, N-14, N-17, and N-19 are answered.
+**Needs from you:** N-11, N-18, N-20, N-21, N-22, N-41, N-42, N-43, N-44, and final sign-off N-40. N-12, N-13, N-14, N-15, N-16, N-17, and N-19 are answered.
 
 **Steps**
 
@@ -311,12 +311,12 @@ The database developer works on the `database/supabase` branch (N-39).
 2. If N-33 chooses a dedicated read-only role, write that change as a separate, reviewed migration file (for example `db/migrations/002_readonly_role.sql`) and record an ADR. Do not edit the audited file silently.
 3. Write `db/verify.sql` to check:
    - The four tables, two enums, triggers, and RLS settings exist.
-   - Row counts after seeding: 223 menus, 10 hours, 11 holidays, 11 metadata.
+   - Row counts after seeding: 227 menus, 10 hours, 11 holidays, 11 metadata (dataset `mvp_v1_3`).
    - No overlapping holiday ranges.
    - Every weekday (1–5) has breakfast, lunch, and dinner rows. Every weekend day (6–7) has brunch and dinner rows.
    - All five lunch stations exist for each weekday.
    - No `lite_lunch` menu rows exist (they were never supplied).
-   - `holiday_sample` rows exist and are brunch-only with a null weekday.
+   - `holiday_sample` rows exist, are brunch or dinner only, and have a null weekday.
 4. Set up the local test database (N-35): Docker Postgres or the Supabase CLI, or a dedicated Supabase test project.
 5. Run `schema.sql` on the test database first, then on the real Supabase project (fresh project only; the script creates types and is not re-runnable).
 6. Confirm in the Supabase dashboard that the anonymous and authenticated roles cannot read any table.
@@ -344,7 +344,7 @@ A `db/seed.sql` already exists (added 2026-10-24). It says it was generated from
    - Blank station or food names, non-positive `display_order`.
    - End time not after start time, end date before start date, overlapping holiday ranges.
    - Duplicate items within the same day, meal, and station.
-   - Row counts different from the expected dataset version (`mvp_v1_2`: 223 / 10 / 11 / 11).
+   - Row counts different from the expected dataset version (`mvp_v1_3`: 227 / 10 / 11 / 11).
 3. Generate `db/seed.sql` deterministically (same input gives byte-identical output). Keep the conventions of the existing file: one transaction, `ON CONFLICT DO NOTHING` for menus, and `ON CONFLICT ... DO UPDATE` for hours, holidays, and metadata, so re-running does not duplicate rows.
 4. Add a parity check that compares the workbook against `Aggrey_MVP_Data.md` and fails if they differ. The workbook stays canonical; the Markdown is a mirror.
 5. Run the seed on the test database, run `verify.sql`, then repeat on Supabase.
@@ -392,7 +392,7 @@ A `db/seed.sql` already exists (added 2026-10-24). It says it was generated from
 
 **Goal:** given a "now" and a requested date, decide the schedule type and which meals are valid. No I/O.
 **Depends on:** M3 (structure only).
-**Needs from you:** N-13, N-40 (approved spec from MS). N-12 is answered.
+**Needs from you:** N-40 (approved spec from MS). N-12 and N-13 are answered.
 
 **Steps**
 
@@ -418,14 +418,14 @@ A `db/seed.sql` already exists (added 2026-10-24). It says it was generated from
 
 **Goal:** turn a resolved date, schedule, meal, and optional station or food keyword into structured facts from the database, with missing-data rules applied.
 **Depends on:** M2, M4.
-**Needs from you:** N-15, N-16, N-26, N-40 (food matching rules from the approved spec, per N-17).
+**Needs from you:** N-26, N-40 (food matching rules from the approved spec, per N-17). N-15 and N-16 are answered.
 
 **Steps**
 
 1. **Menu service** (schema section 10):
    - Weekday and weekend: `menu_scope = 'weekly'`, ISO weekday, meal, optional station. Return **all** rows ordered by station, then `display_order`.
    - Holiday and break brunch: query `menu_scope = 'holiday_sample'` only. Mark the result as provisional. Never query or copy Saturday (`day_of_week = 6`) rows for a holiday or break. The metadata key `holiday_brunch_source = saturday_sample` only records where the sample came from; code must not read it to choose rows. Add a test that fails if holiday brunch ever returns `weekly` rows.
-   - Holiday and break dinner: follow N-16 exactly. If the fallback is approved, isolate it in one function flagged `unverified=True` so it can be removed when real data arrives (N-26).
+   - Holiday and break dinner (N-16): query `menu_scope = 'holiday_sample'` and `meal_type = 'dinner'` only, and mark the result as provisional, exactly like holiday brunch. Never query Saturday's `weekly` rows or the calendar weekday's dinner. Add a test that fails if holiday dinner ever returns `weekly` rows.
    - Lite Lunch: always return "menu unavailable" with its hours.
    - Zero rows for a valid meal: return "menu unavailable." Never fall back to another day.
 2. **Station handling:** read the station list from the menu rows for that day and meal. Never hard-code five stations (schema section 18).
@@ -443,7 +443,7 @@ A `db/seed.sql` already exists (added 2026-10-24). It says it was generated from
 
 **Goal:** understand a student's message, keep short follow-up context, and produce a short, accurate reply string.
 **Depends on:** M5.
-**Needs from you:** N-11, N-13, N-18, N-20, N-22, N-40 (approved spec from MS). N-12, N-14, N-17, and N-19 are answered, with follow-ups tracked in the spec.
+**Needs from you:** N-11, N-18, N-20, N-22, N-40 (approved spec from MS). N-12, N-13, N-14, N-16, N-17, and N-19 are answered, with follow-ups tracked in the spec.
 
 **Steps**
 
@@ -592,7 +592,7 @@ A `db/seed.sql` already exists (added 2026-10-24). It says it was generated from
 
 ## 6. Acceptance test matrix
 
-Expected results come from dataset `mvp_v1_2`. Dates are real 2026–2027 dates, so tests can pin the clock. Wording is the meaning, not the final copy (N-18).
+Expected results come from dataset `mvp_v1_3`. Dates are real 2026–2027 dates, so tests can pin the clock. Wording is the meaning, not the final copy (N-18).
 
 | # | Date (day) and time | Message | Expected meaning |
 | --- | --- | --- | --- |
@@ -606,7 +606,7 @@ Expected results come from dataset `mvp_v1_2`. Dates are real 2026–2027 dates,
 | 8 | 2026-10-31 (Sat) | What's for breakfast? | Breakfast is not served; brunch and dinner are the meals today. |
 | 9 | 2026-11-01 (Sun) | What time is brunch? | 10:30 AM to 1:30 PM. |
 | 10 | 2026-11-25 (Wed, Thanksgiving break) | What's for lunch? | No regular lunch; break schedule; brunch 10–11 AM, dinner 4–6 PM; holiday sample brunch menu labeled as such. |
-| 11 | 2026-11-25 (Wed) | What's for dinner? | Follows N-16 exactly; never presented as a confirmed menu. |
+| 11 | 2026-11-25 (Wed) | What's for dinner? | Break hours 4–6 PM and the holiday sample dinner (Beef Stroganoff, Butter Egg Noodle, Steamed Broccoli, Oregano Roasted Carrots), labeled as a sample menu. Never the Wednesday weekly dinner (N-16). |
 | 12 | 2026-12-01 (Tue, virtual classes) | What time is dinner? | 4–6 PM, clearly marked as not yet confirmed. |
 | 13 | 2027-01-18 (Mon, MLK Day) | What time is brunch? | Holiday hours: 10:30 AM to 1:30 PM. |
 | 14 | 2026-09-07 (Mon, Labor Day) | What's for breakfast? | Breakfast not served; holiday brunch and dinner. |

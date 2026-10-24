@@ -73,7 +73,7 @@ The existing audited schema defines **exactly four dining-data tables**. Do not 
 
 | Table | Core fields | Usage |
 | --- | --- | --- |
-| `menus` | `menu_scope`, `day_of_week`, `meal_type`, `station`, `food_item`, `display_order` | One row per food item. Weekly menus repeat by ISO weekday (1 = Monday, 7 = Sunday); `holiday_sample` brunch has a null weekday. |
+| `menus` | `menu_scope`, `day_of_week`, `meal_type`, `station`, `food_item`, `display_order` | One row per food item. Weekly menus repeat by ISO weekday (1 = Monday, 7 = Sunday); `holiday_sample` brunch and dinner have a null weekday. |
 | `hours` | `schedule_type`, `meal_type`, `start_time`, `end_time` | Serving windows for `weekday`, `weekend`, `holiday`, and `break`. |
 | `holidays` | `name`, `start_date`, `end_date`, `schedule_type`, `verification_status`, `notes` | Explicit dated overrides, including academic breaks. Dates are inclusive. |
 | `metadata` | `key`, `value`, `notes` | Dataset version, timezone, and documented MVP assumptions. |
@@ -82,7 +82,7 @@ The schema uses UUID primary keys, PostgreSQL enums, constraints, indexes, updat
 
 **Data ownership:** `Aggrey_MVP_Data.xlsx` is the canonical *import source*; the PostgreSQL tables are the *runtime source of truth*. `Aggrey_MVP_Data.md` is only a readable mirror. Use the audited SQL migration and seed files, not the older generated SQL package.
 
-- Initial verification targets: **223** menu rows, **10** hours rows, **11** holiday/break rows, and **11** metadata rows.
+- Initial verification targets: **227** menu rows, **10** hours rows, **11** holiday/break rows, and **11** metadata rows.
 - A repeated weekly item has **no `service_date`**. Query all rows matching `menu_scope`, ISO weekday, meal, and optional station, ordered by station and `display_order`.
 - Imports must be validated, transactional, and safe to repeat without duplicating records. Future changes remain manual for the MVP.
 
@@ -109,7 +109,7 @@ Fall Break, Thanksgiving, and Christmas are stored as **break** overrides. The v
 
 - **Normal weekdays:** breakfast/lunch/dinner use `menu_scope = weekly` and the requested ISO weekday.
 - **Regular weekends:** Saturday/Sunday brunch and dinner use their respective weekly menu rows.
-- **Holidays and breaks:** brunch uses the one provisional `holiday_sample` menu. A verified holiday dinner menu is **not** available. The weekday-dinner fallback in metadata is for demo/testing only; do not present it as a confirmed holiday meal.
+- **Holidays and breaks:** brunch and dinner use the provisional `holiday_sample` menus. The holiday dinner sample is a copy of Saturday dinner (N-16); a verified holiday dinner menu is **not** available. Label both as sample menus; do not present them as confirmed holiday meals.
 - **Lite Lunch:** hours exist; a separate food list does not. Answer time questions, but say the food menu is unavailable.
 - **Food availability:** return actual menu matches and their stations. When there is no match, say **"not listed on the stored menu"**, not that the cafeteria definitely does not serve it.
 
