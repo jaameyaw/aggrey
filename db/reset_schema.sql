@@ -1,8 +1,24 @@
 -- Reset script: undoes schema.sql so it can be run again on a clean slate.
 -- Not part of the audited schema files (schema.sql / seed.sql / verify.sql).
--- Safe to run anytime before real data matters -- drops all four tables.
+--
+-- DESTRUCTIVE: drops all four tables and EVERY ROW in them. Never run it on the
+-- live Supabase project once real data matters. To run it, set the confirmation
+-- flag in the same session first, e.g. as the first line in the SQL editor:
+--     SET aggrey.confirm_reset = 'yes';
+--
+-- The drops also remove migration 001's grants and policies (the
+-- aggrey_readonly role itself survives). Afterwards re-run, in order:
+--     schema.sql -> seed.sql -> migrations/001_readonly_role.sql -> verify.sql
 
 BEGIN;
+
+DO $$
+BEGIN
+    IF current_setting('aggrey.confirm_reset', true) IS DISTINCT FROM 'yes' THEN
+        RAISE EXCEPTION 'reset_schema.sql refused: run SET aggrey.confirm_reset = ''yes''; first (this drops all data)';
+    END IF;
+END;
+$$;
 
 DROP TABLE IF EXISTS public.menus CASCADE;
 DROP TABLE IF EXISTS public.hours CASCADE;
