@@ -89,9 +89,9 @@ Where an option is labeled "suggested," it is a proposal for you to accept or re
 | --- | --- | --- |
 | N-24 | **Hosting tier.** Some free hosting tiers sleep when idle, which can slow or miss webhook replies. Approve an always-on paid Render instance for the pilot, or accept the risk after testing. | M9 |
 | N-31 | **Repository location.** The repo is inside OneDrive. Syncing `.git`, `.venv`, and `node_modules` through OneDrive often causes file locks and conflicts. Suggested: move the working copy outside OneDrive (for example `C:\dev\aggrey`), with GitHub as the backup. Approve or reject. **Deferred (2026-10-24):** M0 step 1 was skipped; the working copy stays in OneDrive for now. Expect OneDrive to sync `backend/.venv`; if file locks or sync conflicts appear, move the clone outside OneDrive. | M0 |
-| N-32 | **Folder layout.** The architecture doc suggests `backend/`, `web/`, `db/`, `data/`, and `docs/`. Approve moving the existing docs into `docs/` and `mvp dining data/` into `data/` (removing the space in the folder name). **Answer (2026-10-24):** approved and applied in M0. | M0 |
+| N-32 | **Folder layout.** The architecture doc suggests `backend/`, `web/`, `db/`, `data/`, and `docs/`. Approve moving the existing docs into `docs/` and `mvp dining data/` into `data/` (removing the space in the folder name). **Answer (2026-10-24):** approved and applied in M0. The landing page folder is named `frontend/` instead of `web/` (decided 2026-10-24). | M0 |
 | N-33 | **Database access method from FastAPI.** Choose one: (a) Supabase Python client over HTTPS using the secret key (matches the env names in the architecture doc; bypasses RLS), or (b) direct Postgres connection via the Supabase connection pooler, ideally with a dedicated read-only role. Option (b) needs a small approved addition to the audited schema: a read-only role and select policies. | M1, M3, M5 |
-| N-34 | **Tooling versions.** Suggested: Python 3.12 with `uv` for dependencies; Node.js current LTS with `pnpm` (or `npm`). Approve or specify. **Answer (2026-10-24), partial:** Python 3.13 with `uv`. The Node.js package manager is still open; decide it before M8. | M0 |
+| N-34 | **Tooling versions.** Suggested: Python 3.12 with `uv` for dependencies; Node.js current LTS with `pnpm` (or `npm`). Approve or specify. **Answer (2026-10-24):** Python 3.13 with `uv`; Node.js 24 with `pnpm`. | M0 |
 | N-35 | **Local database for tests.** Is Docker available on your development machine? If yes, integration tests can run against a local Postgres or the Supabase CLI. If not, tests run against a separate Supabase test project (needs N-02 access). **Note (2026-10-24):** Docker is installed on the project owner's machine. Still confirm for the database developer's machine. | M1, M10 |
 | N-36 | **Environments.** One Supabase project (production only), or two (staging plus production)? Same question for Render and Sendblue numbers. | M9 |
 | N-37 | **Usage metrics without storing messages.** The PRD wants counts of questions, unique testers, and top intents. Approve logging intent plus a salted hash of the phone number (no message text, no raw numbers). | M7, M11 |
@@ -229,7 +229,7 @@ MS (Intent and Logic Specification) is a document, not code. It needs no other m
 3. Apply the approved folder layout (N-32). Suggested:
    ```text
    backend/   FastAPI app, domain rules, adapters, tests
-   web/       Next.js landing page
+   frontend/  Next.js landing page
    db/        schema.sql, seed.sql, verify.sql, seed generator
    data/      Aggrey_MVP_Data.xlsx and its Markdown mirror
    docs/      PRD, architecture, schema reference, roadmap, adr/
@@ -237,7 +237,7 @@ MS (Intent and Logic Specification) is a document, not code. It needs no other m
 4. Fix the document issues listed in Section 2, items 1 and 6.
 5. Add `.gitignore` (Python, Node, `.env`, OS files), `.editorconfig`, `.gitattributes`.
 6. Scaffold `backend/` with the approved Python version and package manager (N-34): `pyproject.toml`, ruff, mypy, pytest, pre-commit configuration.
-7. Add a GitHub Actions workflow that runs lint, type check, and tests for `backend/` (and `web/` once it exists).
+7. Add a GitHub Actions workflow that runs lint, type check, and tests for `backend/` (and `frontend/` once it exists).
 8. Turn on branch protection, secret scanning, push protection, and Dependabot.
 9. Add `CONTRIBUTING.md` or a README section describing the branch, commit, and review rules from Section 3.1.
 
@@ -250,7 +250,7 @@ MS (Intent and Logic Specification) is a document, not code. It needs no other m
 | --- | --- |
 | 1. Repo location | Skipped by decision; N-31 deferred |
 | 2. Commit docs as-is | Done |
-| 3. Folder layout | Done (`docs/`, `db/`, `data/`, `backend/`; `web/` comes in M8) |
+| 3. Folder layout | Done (`docs/`, `db/`, `data/`, `backend/`, `frontend/`) |
 | 4. Section 2 items 1 and 6 | Done |
 | 5. `.gitignore`, `.editorconfig`, `.gitattributes` | Done |
 | 6. Backend scaffold | Done: Python 3.13, uv, ruff, mypy (strict), pytest, pre-commit |
@@ -515,14 +515,14 @@ A `db/seed.sql` already exists (added 2026-10-24). It says it was generated from
 
 **Steps**
 
-1. Scaffold Next.js with TypeScript (strict) in `web/`, with ESLint and Prettier added to CI.
+1. Scaffold Next.js with TypeScript (strict) in `frontend/`, with ESLint and Prettier added to CI. **Done 2026-10-24** on branch `m8/frontend-scaffold`: Next.js 16, pnpm, App Router, CSS Modules, a CI job for lint, type check, and format, and a placeholder page that uses only README copy. Steps 2–6 are still open (branding N-09, privacy N-10, device tests, Lighthouse).
 2. Content: what Aggrey does, 3–4 sample questions taken from the approved phrase corpus, the visible phone number, a "Text Aggrey" button, and the privacy notice or link (N-10). Use only approved school naming and branding (N-09).
 3. The only configuration value is `NEXT_PUBLIC_AGGREY_PHONE_NUMBER`. Fail the build if it is missing. No database access and no other secrets.
 4. Build the `sms:` link and **test it on a real iPhone and a real Android phone**. Keep the number visible as text for desktop users.
 5. Accessibility: semantic HTML, sufficient color contrast, descriptive link text, works at 320 px width. Run Lighthouse and fix accessibility issues.
 6. Basic SEO and social metadata (title, description).
 
-**Deliverables:** `web/` app, test notes for iPhone and Android.
+**Deliverables:** `frontend/` app, test notes for iPhone and Android.
 **Done when:** the page passes CI, scores well on Lighthouse accessibility, and tapping the button opens Messages with the correct number on both phone types.
 
 ---
@@ -536,7 +536,7 @@ A `db/seed.sql` already exists (added 2026-10-24). It says it was generated from
 **Steps**
 
 1. **Render (backend):** create the web service from `backend/`, set environment variables in the Render dashboard, configure the health check on `/health`, and run exactly **one instance** (architecture section 7). Pick the plan approved in N-24.
-2. **Vercel (web):** connect `web/`, set `NEXT_PUBLIC_AGGREY_PHONE_NUMBER`, and attach the domain if N-06 provides one.
+2. **Vercel (frontend):** connect `frontend/` as the project root directory, set `NEXT_PUBLIC_AGGREY_PHONE_NUMBER`, and attach the domain if N-06 provides one.
 3. **Supabase:** confirm `schema.sql`, `seed.sql`, and `verify.sql` were applied (M1, M2). Turn on backups appropriate to the plan.
 4. **Sendblue:** point the receive webhook at the deployed HTTPS URL.
 5. **CI/CD:** deploy only from `main` after CI passes. Use preview deployments for web pull requests.
