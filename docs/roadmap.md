@@ -244,6 +244,22 @@ MS (Intent and Logic Specification) is a document, not code. It needs no other m
 **Deliverables:** committed docs, folder structure, tooling configs, CI workflow, protected `main`.
 **Done when:** a fresh clone can run `lint`, `typecheck`, and `test` commands with one documented command each, and CI is green on an empty test suite.
 
+**Progress (2026-10-24):**
+
+| Step | Status |
+| --- | --- |
+| 1. Repo location | Skipped by decision; N-31 deferred |
+| 2. Commit docs as-is | Done |
+| 3. Folder layout | Done (`docs/`, `db/`, `data/`, `backend/`; `web/` comes in M8) |
+| 4. Section 2 items 1 and 6 | Done |
+| 5. `.gitignore`, `.editorconfig`, `.gitattributes` | Done |
+| 6. Backend scaffold | Done: Python 3.13, uv, ruff, mypy (strict), pytest, pre-commit |
+| 7. CI workflow | Done: `.github/workflows/ci.yml`. Needs a first green run on GitHub. |
+| 8. GitHub settings | Dependabot config done (`.github/dependabot.yml`). Branch protection, secret scanning, and push protection must be turned on in GitHub settings. On GitHub Free, private repos do not offer branch protection or secret-scanning push protection, so this may need GitHub Pro or Team, or the repo owner enforcing the rule by agreement. |
+| 9. Contributing rules | Done: `CONTRIBUTING.md` and a pull request template |
+
+The database developer works on the `database/supabase` branch (N-39).
+
 ---
 
 ### MS. Intent and Logic Specification

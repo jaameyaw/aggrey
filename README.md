@@ -26,3 +26,49 @@ Aggrey also understands changes in the dining schedule. On weekends and school h
 Over time, Aggrey can become a direct communication layer between campus dining services and students, helping dining information stay accurate even when menus, hours, or availability change.
 
 **Aggrey makes one everyday question easier to answer: Should I go to the caf?**
+
+---
+
+## Repository layout
+
+```text
+backend/   FastAPI service (Python 3.13, uv): domain rules, adapters, tests
+db/        schema.sql, seed.sql (and later verify.sql and the seed generator)
+data/      Aggrey_MVP_Data.xlsx (source of truth) and its Markdown mirror
+docs/      PRD, architecture, database schema, intent and logic spec, roadmap
+```
+
+The landing page (`web/`) is added in roadmap module M8.
+
+Start with [`docs/roadmap.md`](docs/roadmap.md) for the build plan and open questions, and [`CONTRIBUTING.md`](CONTRIBUTING.md) for branch, commit, and review rules.
+
+## Development
+
+### Prerequisites
+
+- [uv](https://docs.astral.sh/uv/) (installs Python 3.13 for you if needed)
+- Git
+
+### Set up
+
+```bash
+cd backend
+uv sync
+uv run pre-commit install
+```
+
+`pre-commit install` runs the checks below automatically before each commit.
+
+### Check and test
+
+Run from `backend/`:
+
+| Task | Command |
+| --- | --- |
+| Lint | `uv run ruff check .` |
+| Format | `uv run ruff format .` (CI runs `--check`) |
+| Type check | `uv run mypy` |
+| Test | `uv run pytest` |
+| Every pre-commit check on all files | `uv run pre-commit run --all-files` |
+
+CI runs the same checks on every pull request and on `main`.
