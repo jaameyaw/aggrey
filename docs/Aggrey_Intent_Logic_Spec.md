@@ -1,7 +1,8 @@
 # Aggrey Intent and Logic Specification
 
-**Status:** Draft for review. Not approved until sign-off is recorded (roadmap N-40).
+**Status:** Approved October 24, 2026 by Johnson Addo Ameyaw, project owner (roadmap N-40). Items still marked **Open (N-xx)** are not covered by this approval; see section 11.
 **Drafted:** October 24, 2026
+**Approved:** October 24, 2026 (N-40). Review fixes applied before approval are listed in section 14.
 **Dataset:** `mvp_v1_3`
 **Sources:** `Aggrey_MVP_PRD.md`, `Aggrey_MVP_Database_Schema.md`, `Aggrey_Technical_Architecture.md`, `roadmap.md` Section 1 answers, and the dining data.
 
@@ -12,8 +13,8 @@ Aggrey is rule-based. This document is the complete list of what Aggrey understa
 Every rule carries one of these tags:
 
 - **Decided** — confirmed by the PRD, the schema doc, or an answered roadmap item. The source is named.
-- **Proposed** — a suggestion in this draft. It becomes decided when you sign off (N-40). Change or reject it before signing.
-- **Open (N-xx)** — waiting on a roadmap question. Code must not assume an answer.
+- **Decided (N-40)** — proposed in the draft and approved at sign-off on 2026-10-24.
+- **Open (N-xx)** — waiting on a roadmap question. Code must not assume an answer. Where a suggested behavior is shown, it is a suggestion only.
 
 Example times in this document come from dataset `mvp_v1_3`. Code always reads times, menus, stations, and holidays from the database and never hard-codes them.
 
@@ -34,6 +35,7 @@ Example times in this document come from dataset `mvp_v1_3`. Code always reads t
 11. [Open items](#11-open-items)
 12. [Phrase corpus](#12-phrase-corpus)
 13. [Traceability to the acceptance tests](#13-traceability-to-the-acceptance-tests)
+14. [Sign-off record](#14-sign-off-record)
 
 ---
 
@@ -57,12 +59,12 @@ Example times in this document come from dataset `mvp_v1_3`. Code always reads t
 
 ## 2. Text normalization
 
-**Proposed.** Before matching, the message is normalized:
+**Decided (N-40).** Before matching, the message is normalized:
 
 1. Lowercase.
 2. Replace curly quotes and apostrophes with straight ones, then remove apostrophes ("what's" becomes "whats").
 3. Replace `&` with ` and `.
-4. Replace every character that is not a letter or digit with a space. Keep `/` only between digits, so dates like `11/25` can be recognized and rejected (section 3.2).
+4. Replace every character that is not a letter or digit with a space. Keep `/` and `-` only between digits, so dates like `11/25` and `11-25` can be recognized and rejected (section 3.2).
 5. Collapse repeated spaces and trim.
 
 Matching works on whole words after normalization, not on substrings. For example, "caf" must not match inside "cafeteria" by accident; both are listed as separate words where needed.
@@ -73,7 +75,7 @@ Matching works on whole words after normalization, not on substrings. For exampl
 
 ### 3.1 Meal words
 
-**Proposed.** These words identify a meal. Anything not listed is not a meal word.
+**Decided (N-40).** These words identify a meal. Anything not listed is not a meal word.
 
 | Meal (`meal_type`) | Words and phrases |
 | --- | --- |
@@ -87,7 +89,7 @@ Rules:
 
 - "lite lunch" and "light lunch" are matched before "lunch," so "What's for lite lunch?" is never read as lunch.
 - "tonight" with no meal word means dinner (section 3.2).
-- If a message names two or more different meals ("lunch or dinner?"), Aggrey asks which one. **Proposed.**
+- If a message names two or more different meals ("lunch or dinner?"), Aggrey asks which one. **Decided (N-40).**
 
 ### 3.2 Date phrases
 
@@ -95,15 +97,15 @@ Rules:
 | --- | --- | --- |
 | *(no date phrase)* | Today in `America/New_York` | **Decided** (N-12) |
 | today | Today | **Decided** (N-13) |
-| tonight | Today. If no meal is named, the meal is dinner. | Phrase **Decided** (N-13); "dinner" default **Proposed** |
-| tomorrow, tmrw, tmr, tomorow | Today plus one day | Phrase **Decided** (N-13); spelling variants **Proposed** |
-| Weekday names (monday, mon, tuesday, tues, ...) | The next upcoming day with that name: today if today has that name, otherwise the next one. Never a past date. | **Decided** (N-13); abbreviations **Proposed** |
+| tonight | Today. If no meal is named, the meal is dinner. | Phrase **Decided** (N-13); "dinner" default **Decided (N-40)** |
+| tomorrow, tmrw, tmr, tomorow | Today plus one day | Phrase **Decided** (N-13); spelling variants **Decided (N-40)** |
+| Weekday names (monday, mon, tuesday, tues, ...) | The next upcoming day with that name: today if today has that name, otherwise the next one. Never a past date. | **Decided** (N-13); abbreviations **Decided (N-40)** |
 | Explicit dates (11/25, nov 25, november 25th) | Not supported in the first version | **Decided** (N-13) |
 
-**Recognized but unsupported.** If the message contains any of the following, Aggrey asks the student to rephrase and lists the supported date words. It never answers for a different date. **Proposed.**
+**Recognized but unsupported.** If the message contains any of the following, Aggrey asks the student to rephrase and lists the supported date words. It never answers for a different date. **Decided (N-40).**
 
 - yesterday, last night
-- month names and abbreviations
+- month names and abbreviations. "may" counts only when a number is right before or after it ("may 3," "3 may"), so "May I see the menu?" is not a date. Other month names and abbreviations count on their own.
 - numeric dates (`11/25`, `11-25`)
 - "next week," "this week," "this weekend," "weekend"
 
@@ -113,7 +115,7 @@ This matters because "What's for lunch on 11/25?" must not be answered with toda
 
 **Decided** (PRD, roadmap M5): station names come from the menu data for the requested day and meal, never from a hard-coded list.
 
-**Proposed** aliases. Each alias points to a station name in the data. An alias only works if that station exists in the menu for the requested day and meal.
+**Decided (N-40)** aliases. Each alias points to a station name in the data. An alias only works if that station exists in the menu for the requested day and meal.
 
 | Station in data | Aliases (normalized) |
 | --- | --- |
@@ -129,22 +131,22 @@ The full station name, normalized ("grill sandwich," "main hot food"), always wo
 
 ### 3.4 Filler words
 
-**Proposed.** These words are ignored when extracting a food keyword (section 9.1): the, a, an, any, some, they, there, them, is, are, do, does, have, has, got, get, serving, served, today, tonight, tomorrow, caf, cafe, cafeteria, dining, hall, at, for, on, in, of, to, please, pls, yo, hey, still, now, meal names, and station aliases from section 3.3 when they are used with "station."
+**Decided (N-40).** These words are ignored when extracting a food keyword (section 9.1): the, a, an, any, some, they, there, them, is, are, do, does, have, has, got, get, serving, served, anything, something, food, stuff, you, yall, guys, today, tonight, tomorrow, caf, cafe, cafeteria, dining, hall, at, for, on, in, of, to, please, pls, yo, hey, still, now, meal names, and station aliases from section 3.3 when they are used with "station."
 
 ### 3.5 Control keywords
 
 | Keyword (whole message, after normalization) | Meaning | Status |
 | --- | --- | --- |
 | stop, unsubscribe, cancel, end, quit | Opt out | **Open (N-11)** — depends on what Sendblue does with these on your plan |
-| help | Help | **Open (N-11)** for carrier rules; **Proposed** behavior in section 7.6 |
-| what can you do, how does this work, commands | Help | **Proposed** |
-| hi, hello, hey, yo | Greeting | **Proposed:** treated as help |
+| help | Help | **Open (N-11)** for carrier rules; **Decided (N-40)** behavior in section 7.6 |
+| what can you do, how does this work, commands | Help | **Decided (N-40)** |
+| hi, hello, hey, yo | Greeting | **Decided (N-40):** treated as help |
 
 ---
 
 ## 4. Intents
 
-**Proposed** final list (resolves roadmap Section 2, item 9). PRD FR-2 names four dining intents. This spec keeps those four and splits "hours lookup" into two cases. It also adds three conversation intents that are not dining questions.
+**Decided (N-40)** final list (resolves roadmap Section 2, item 9). PRD FR-2 names four dining intents. This spec keeps those four and splits "hours lookup" into two cases. It also adds three conversation intents that are not dining questions.
 
 | Intent | What it means | PRD FR-2 category |
 | --- | --- | --- |
@@ -161,7 +163,7 @@ If you approve this list, the PRD's FR-2 should note that `open_now` is part of 
 
 ### Trigger phrases
 
-**Proposed.** Checked on the normalized text.
+**Decided (N-40).** Checked on the normalized text.
 
 | Intent | Triggers |
 | --- | --- |
@@ -174,7 +176,7 @@ If you approve this list, the PRD's FR-2 should note that `open_now` is part of 
 
 ## 5. Intent priority
 
-**Proposed.** A message can match more than one intent. Aggrey checks these rules in order and uses the first that applies.
+**Decided (N-40).** A message can match more than one intent. Aggrey checks these rules in order and uses the first that applies.
 
 | Order | Rule | Example | Result |
 | --- | --- | --- | --- |
@@ -191,8 +193,8 @@ If you approve this list, the PRD's FR-2 should note that `open_now` is part of 
 
 Notes:
 
-- Rule 6 before rule 7: "Is the caf open?" is `open_now`; "When does the caf close?" also goes to `open_now` because no meal word is named. "When does lunch end?" goes to `hours`.
-- Rule 8 before rule 9: "Is there pizza at lunch?" is a food lookup, not a station menu. Both give the same pizzas, so the answer is still correct.
+- Rule 6 before rule 7: "Is the caf open?" is `open_now`; "When does the caf close?" also goes to `open_now` because no meal word is named, and gets the "when" reply in 7.3. "When does lunch end?" goes to `hours`.
+- Rule 8 before rule 9: "Is there pizza at lunch?" is a food lookup, not a station menu. The answer lists items whose names contain "pizza." This is not always the full Pizza station: on Thursday it does not include Buffalo Chicken Calzone. If a keyword is exactly a station alias (3.3) and matches no item, Aggrey answers with that station's menu instead of "not on the menu" (7.4 step 7).
 - A food lookup trigger with nothing left after removing filler words ("Do they have anything?") falls through to `menu` if a meal word is present, otherwise `unclear`.
 
 ---
@@ -229,14 +231,14 @@ Keep the override's `name`, `verification_status`, and `notes` for the reply.
 | --- | --- | --- | --- |
 | lunch | weekend, holiday, break | Lunch isn't served today; brunch and dinner are. Then the brunch menu. | **Decided** (PRD 3; acceptance rows 7, 10) |
 | breakfast | weekend, holiday, break | Breakfast isn't served today; brunch and dinner are the meals. No menu. | **Decided** (PRD 3; acceptance rows 8, 14) |
-| lite lunch | weekend, holiday, break | Lite Lunch isn't served today; brunch and dinner are the meals. No menu. | **Proposed** |
-| brunch | weekday | Brunch is only on weekends, holidays, and breaks; today's meals are breakfast, lunch, Lite Lunch, and dinner. No menu. | **Proposed** |
+| lite lunch | weekend, holiday, break | Lite Lunch isn't served today; brunch and dinner are the meals. No menu. | **Decided (N-40)** |
+| brunch | weekday | Brunch is only on weekends, holidays, and breaks; today's meals are breakfast, lunch, Lite Lunch, and dinner. No menu. | **Decided (N-40)** |
 
-When the substitute meal (brunch, for a weekend lunch question) is already over, the finished-meal rule in 6.4 applies to the substitute. **Proposed.** Example: Saturday 3:00 PM, "What's for lunch?" gives: Lunch isn't served on weekends. Brunch is over for today. Dinner is served 5:00 to 8:00 PM.
+When the substitute meal (brunch, for a weekend lunch question) is already over, the finished-meal rule in 6.4 applies to the substitute. **Decided (N-40).** Example: Saturday 3:00 PM, "What's for lunch?" gives: Lunch isn't served on weekends. Brunch is over for today. Dinner is served 5:00 to 8:00 PM.
 
 ### 6.4 Time of day (only when the date is today)
 
-**Proposed** window boundaries: a meal is being served from its start time up to, but not including, its end time. At exactly 2:00 PM on a weekday, lunch is over and Lite Lunch is being served.
+**Decided (N-40)** window boundaries: a meal is being served from its start time up to, but not including, its end time. At exactly 2:00 PM on a weekday, lunch is over and Lite Lunch is being served.
 
 For any meal on today's schedule, the meal is in one of three states:
 
@@ -289,7 +291,7 @@ The finished-meal rule only applies when the date is today. "What's for lunch to
 | Valid meal, zero menu rows | Menu information isn't available for that meal. Never fall back to another day. |
 | Valid meal, zero hours rows | Hours aren't available for that meal. |
 | Database can't be reached | I can't get dining info right now. Never a guessed answer. |
-| Station named but not in that day's menu | There's no \<station\> station at \<meal\> on \<day\>. Then list the stations that are there. **Proposed** |
+| Station named but not in that day's menu | There's no \<station\> station at \<meal\> on \<day\>. Then list the stations that are there. **Decided (N-40)** |
 
 ---
 
@@ -302,8 +304,8 @@ The finished-meal rule only applies when the date is today. "What's for lunch to
 | Case | Behavior | Status |
 | --- | --- | --- |
 | No meal named | Ask which meal, listing only that day's meals. Save a pending meal question (section 8). | **Open (N-41)**, suggested behavior shown |
-| "tonight" with no meal | Dinner | **Proposed** |
-| Meal not served on that schedule | Section 6.3 | Decided / Proposed as marked there |
+| "tonight" with no meal | Dinner | **Decided (N-40)** |
+| Meal not served on that schedule | Section 6.3 | **Decided** as marked there |
 | Date is today and meal is over | Section 6.4 finished-meal rule | **Decided** (N-14) |
 | Lite Lunch | Section 6.7 | **Decided** |
 | Weekday lunch, no station named | Ask which station, listing stations from that day's lunch data. Save a pending station question. | **Decided** (PRD FR-12) |
@@ -313,9 +315,10 @@ The finished-meal rule only applies when the date is today. "What's for lunch to
 | Brunch (holiday or break) | `holiday_sample` items grouped by station, labeled as a sample menu | **Decided** (6.6) |
 | Dinner (holiday or break) | `holiday_sample` dinner items, labeled as a sample menu | **Decided** (6.6, N-16) |
 | Breakfast, dinner (weekday or weekend) | All items for that day and meal | **Decided** (PRD FR-6) |
-| Station named for a non-lunch meal ("What's at the grill for brunch?") | That station's items for that meal | **Proposed** |
+| Station named for a non-lunch meal ("What's at the grill for brunch?") | That station's items for that meal | **Decided (N-40)** |
+| Station named, no meal named ("What's the special today?", "What's at the turntable?") | Use the meal on that day's schedule whose menu has the station (weekday: Pizza is lunch, Dinner / turntable is dinner; weekend: Pizza is brunch). In the current data each station appears in only one meal per day. If data ever puts a station in more than one meal that day, use the next meal (6.4), or the last one if all are over, then apply the finished-meal rule. If none does, use the 6.7 station rule for the day's main meal (lunch on weekdays, brunch otherwise). This rule comes before the N-41 meal question. | **Decided (N-40)** |
 
-**Proposed:** menu replies for a meal that is not over include its serving time, for example "Dinner today (Mon), 5:00 to 8:00 PM: ...".
+**Decided (N-40):** menu replies for a meal that is not over include its serving time, for example "Dinner today (Mon), 5:00 to 8:00 PM: ...".
 
 ### 7.2 `hours`
 
@@ -324,17 +327,17 @@ The finished-meal rule only applies when the date is today. "What's for lunch to
 | Case | Reply meaning | Status |
 | --- | --- | --- |
 | Meal named and served that day | "\<Meal\> \<day\>: \<start\> to \<end\>." Add the provisional label if 6.5 applies. | **Decided** (PRD FR-7) |
-| Meal named, today, already over | Same, plus "(over for today)" | **Proposed** |
+| Meal named, today, already over | Same, plus "(over for today)" | **Decided (N-40)** |
 | Lite Lunch on a weekday | Its hours, plus the Lite Lunch note (6.4) | **Decided** (PRD, acceptance row 15; note from owner) |
-| Meal named but not served that day | Not served that day, then the day's meals with their times | **Proposed** |
-| No meal named ("What are the hours tomorrow?") | Every meal on that day's schedule with its times, in start-time order | **Proposed** |
+| Meal named but not served that day | Not served that day, then the day's meals with their times | **Decided (N-40)** |
+| No meal named ("What are the hours tomorrow?") | Every meal on that day's schedule with its times, in start-time order | **Decided (N-40)** |
 | Zero hours rows | Hours aren't available | **Decided** (6.7) |
 
 ### 7.3 `open_now`
 
 **Slots:** meal (optional), date (optional).
 
-If the message names a date other than today ("Is the caf open tomorrow?"), Aggrey answers as `hours` with no meal: every meal that day with its times. **Proposed.**
+If the message names a date other than today ("Is the caf open tomorrow?"), Aggrey answers as `hours` with no meal: every meal that day with its times. **Decided (N-40).**
 
 For today, using section 6.4:
 
@@ -345,7 +348,8 @@ For today, using section 6.4:
 | Between meals | "No, the caf is closed right now. \<Next meal\> starts at \<start\>." | **Decided** (N-15) |
 | Before the first meal | "No, the caf is closed right now. \<First meal\> starts at \<start\>." | **Decided** (N-15) |
 | After the last meal | "No, the caf is closed." Nothing about tomorrow. | **Decided** (N-15 example of 9 PM; matches N-14) |
-| Meal named ("Is lunch still open?") | Answer for that meal only: being served until \<end\>, not started yet, or over (then the 6.4 rule) | **Proposed** |
+| Meal named ("Is lunch still open?") | Answer for that meal only: being served until \<end\>, not started yet, or over (then the 6.4 rule) | **Decided (N-40)** |
+| "When" or "what time" with no meal ("When does the caf close?", "What time does the caf open?") | Answer with times, not "yes" or "no": while a meal is being served, "\<Meal\> is served until \<end\>." Otherwise, "Nothing is being served right now. \<Next meal\> is served \<start\> to \<end\>." After the last meal, "The caf is closed for today." | **Decided (N-40)** |
 
 The `hours` table stores serving windows, not building hours (schema doc section 20). Aggrey treats "the caf is open" as "a meal is being served": yes while a serving window is running, "closed" outside every window. It never claims the caf is open outside the stored windows. **Decided** (N-15, answered 2026-10-24).
 
@@ -355,13 +359,13 @@ The `hours` table stores serving windows, not building hours (schema doc section
 
 | Step | Rule | Status |
 | --- | --- | --- |
-| 1. Keyword | Remove trigger phrases, date words, meal words, and filler words (3.4). What is left is the keyword. If nothing is left, see section 5 notes. | **Proposed** |
+| 1. Keyword | Remove trigger phrases, date words, meal words, and filler words (3.4). What is left is the keyword. If nothing is left, see section 5 notes. | **Decided (N-40)** |
 | 2. Scope | Search only meals served on that day's schedule. If a meal is named, search only that meal. Weekday and weekend use `weekly` rows for that weekday. Holiday and break brunch and dinner use `holiday_sample` (6.6). Lite Lunch has no data and is never searched. | **Decided** (schema doc section 12, PRD FR-8) |
-| 3. Named meal not served | Say that meal isn't served that day, then search the meals that are | **Proposed** |
-| 4. Match | Section 9 | **Decided** that rules live here (N-17); rules themselves **Proposed** |
+| 3. Named meal not served | Say that meal isn't served that day, then search the meals that are | **Decided (N-40)** |
+| 4. Match | Section 9 | **Decided** that rules live here (N-17); rules themselves **Decided (N-40)** |
 | 5. Found | List every match as meal, station, and item, grouped by meal then station | **Decided** (PRD FR-8) |
 | 6. Found, but that meal is over today | Report the match and say the meal is over for today | **Open (N-44)**, suggested |
-| 7. Not found | "I don't see \<keyword\> on the menu for \<day\>." Never "not served" and never "they don't have it." | **Decided** (schema doc section 13) |
+| 7. Not found | If the keyword is exactly a station alias (3.3) and that station is on a searched meal's menu, give that station's menu. Example: no item name contains "sandwich," so "Do they have sandwiches?" gives the Grill / sandwich menu. Otherwise: "I don't see \<keyword\> on the menu for \<day\>." Never "not served" and never "they don't have it." | Wording **Decided** (schema doc section 13); station fallback **Decided (N-40)** |
 
 Example (Monday): "Do they have onion rings?" gives Onion Rings at lunch, Grill / sandwich. "Do they have wings today?" gives: I don't see wings on today's menu.
 
@@ -376,17 +380,17 @@ Used only when a context is pending (section 8).
 | A station alias or name ("pizza," "grill") | That station's items for the saved date | **Decided** (PRD FR-12) |
 | "I don't know," "idk," "not sure," "what are the stations," "options," "which ones" | A one-line explanation of the stations, then the lunch menu grouped by station | **Decided** (N-19, 2026-10-24) |
 | "everything," "all," "all of it," "show everything," "full menu," "both" | Every station, grouped by station | **Decided** (PRD FR-12) |
-| Anything else | Clear the context and read the message as a new message (section 5) | **Proposed** |
+| Anything else | Clear the context and read the message as a new message (section 5) | **Decided (N-40)** |
 
-The one-line explanation uses only facts in the data, for example "Lunch has 5 stations today. Here's what each one has:" Station descriptions beyond the data (such as "Main hot-food is a plate with sides") would be new content that you would need to supply. **Proposed.**
+The one-line explanation uses only facts in the data, for example "Lunch has 5 stations today. Here's what each one has:" Station descriptions beyond the data (such as "Main hot-food is a plate with sides") would be new content that you would need to supply. **Decided (N-40).**
 
 **Pending meal question** (only if N-41 is approved): a meal word replies with that meal's menu for the saved date. Anything else clears the context and is read as a new message.
 
-**A station alias with no pending context** ("Pizza" on its own): read as `menu` for that station today, at lunch on a weekday schedule or brunch on other schedules. If the station isn't on that menu, use the 6.7 station rule. **Proposed.**
+**A station alias with no pending context** ("Pizza" on its own): read as `menu` for that station today, choosing the meal by the 7.1 "station named, no meal named" rule. **Decided (N-40).**
 
 ### 7.6 `help` and greetings
 
-**Proposed.** Reply with one line about what Aggrey does and 2–3 example questions taken from the phrase corpus, for example "What's for dinner?", "Is the caf open?", "Do they have wings today?".
+**Decided (N-40).** Reply with one line about what Aggrey does and 2–3 example questions taken from the phrase corpus, for example "What's for dinner?", "Is the caf open?", "Do they have wings today?".
 
 First message from a new number: **Open (N-22).**
 
@@ -394,7 +398,7 @@ First message from a new number: **Open (N-22).**
 
 **Decided** (PRD FR-10): never guess. Reply asking the student to rephrase, with 2–3 example questions.
 
-Unsupported date phrase (section 3.2): ask the student to rephrase using a supported date word, and list those words. **Proposed.**
+Unsupported date phrase (section 3.2): ask the student to rephrase using a supported date word, and list those words. **Decided (N-40).**
 
 ### 7.8 `opt_out`
 
@@ -417,32 +421,33 @@ Unsupported date phrase (section 3.2): ask the student to rephrase using a suppo
 Rules:
 
 - **Open (N-20):** how long a context lasts. Suggested 10 minutes. After that it is ignored.
-- A sender has at most one context. A new prompt replaces the old one. **Proposed.**
-- The context is cleared after a `follow_up` is answered or when the next message is read as a new message. **Proposed.**
-- "Short answer to a pending context" (section 5, rule 4) means the whole message is a station alias, a meal word, or one of the follow-up phrases in 7.5, optionally with "the," "station," "please," or "pls." **Proposed.**
+- A sender has at most one context. A new prompt replaces the old one. **Decided (N-40).**
+- The context is cleared after a `follow_up` is answered or when the next message is read as a new message. **Decided (N-40).**
+- "Short answer to a pending context" (section 5, rule 4) means the whole message is a station alias, a meal word, or one of the follow-up phrases in 7.5, optionally with "the," "station," "please," or "pls." **Decided (N-40).**
 
 ---
 
 ## 9. Food matching
 
-**Decided** (N-17): the matching rules and synonym list live in this section, and code must not add any that are not written here. The rules below are **Proposed**.
+**Decided** (N-17): the matching rules and synonym list live in this section, and code must not add any that are not written here. The rules below are **Decided (N-40)**.
 
 ### 9.1 Steps
 
 1. Normalize the keyword and every food item name the same way (section 2). `&` becomes `and`.
 2. Split each into words.
 3. Reduce each word to a simple singular form:
-   - ends in "ies" (and longer than 4 letters): replace with "y" (fries → fry)
-   - ends in "oes," "ses," "xes," "zes," "ches," or "shes": drop "es" (potatoes → potato)
-   - ends in "s" but not "ss" (and longer than 3 letters): drop "s" (wings → wing)
+   - ends in "ies" (and longer than 4 letters): the word has two forms, ending in "y" and ending in "ie" (fries → fry or frie; veggies → veggy or veggie). Either form counts as a match.
+   - ends in "oes," "xes," "zes," "ches," or "shes": drop "es" (potatoes → potato)
+   - ends in "s" but not "ss" (and longer than 3 letters): drop "s" (wings → wing, sausages → sausage, cheeses → cheese)
 4. Apply the synonym list (9.3) to the keyword.
 5. A food item matches when **every** keyword word appears among the item's words. Word order doesn't matter, and the item may have extra words.
+6. Apply the exclusions (9.3). An excluded item never matches that keyword, even if step 5 says it does.
 
 Whole-word matching avoids false hits from plain substring search, such as "ham" matching "White Hamburger Bun."
 
 ### 9.2 Results against the current data
 
-Checked against all 223 menu rows of `mvp_v1_2` on 2026-10-24. The four holiday dinner rows added in `mvp_v1_3` repeat Saturday dinner items, so these results are unchanged.
+Checked against all 223 menu rows of `mvp_v1_2` on 2026-10-24. The four holiday dinner rows added in `mvp_v1_3` repeat Saturday dinner items, so these results are unchanged. Rows marked † changed at sign-off (N-40); the sign-off rules and synonyms are applied.
 
 | Keyword | Matches (any day) | Comment |
 | --- | --- | --- |
@@ -454,34 +459,44 @@ Checked against all 223 menu rows of `mvp_v1_2` on 2026-10-24. The four holiday 
 | tacos | Taco Bar | |
 | potato | Candied Sweet Potato, Mashed Potatoes, Roasted Red / Sweet / Yellow Potatoes | |
 | ham | none | Substring search would wrongly match "Hamburger Bun" |
-| burgers | Veggie Burger | Not Beef Patty or Turkey Patty; see 9.4 |
-| hamburger | White Hamburger Bun | A bun, not a burger; see 9.4 |
-| fries | French Fries, **Orange Chicken Stir Fry** | Stir Fry is a false hit; see 9.4 |
-| eggs | Scrambled Eggs, Scrambled Eggs with Cheese, **Butter Egg Noodle** | Egg noodle is a borderline hit; see 9.4 |
-| greens | Vegetarian Collard Greens, **Steamed Green Beans, Western Green Beans** | Green beans are borderline; see 9.4 |
+| burgers † | Beef Patty, Turkey Patty, Veggie Burger | Synonym (9.3); the bun is excluded |
+| hamburger † | Beef Patty, Turkey Patty, Veggie Burger | Synonym (9.3); White Hamburger Bun is excluded |
+| fries † | French Fries | Orange Chicken Stir Fry is excluded (9.3) |
+| eggs | Scrambled Eggs, Scrambled Eggs with Cheese, Butter Egg Noodle | Egg noodle kept at sign-off (9.4) |
+| greens | Vegetarian Collard Greens, Steamed Green Beans, Western Green Beans | Green beans kept at sign-off (9.4) |
+| veggies † | Veggie Sausage Patty, Veggie Burger | Needs the "ie" form (9.1 step 3) |
+| sausages † | Pork Sausage Link, Pork Sausage Patty, Turkey Sausage, Turkey Sausage Patty, Veggie Sausage Patty | Needs the plain "s" rule (9.1 step 3) |
 | hash brown | Hash Brown Patty | Does not match Sunday's "Hashbrowns"; see 9.3 |
 | hashbrowns | Hashbrowns | Does not match "Hash Brown Patty"; see 9.3 |
 
 ### 9.3 Synonym list
 
-**Proposed** starting list. Each entry rewrites the keyword before matching. Only these entries are supported.
+**Decided (N-40).** Each entry rewrites the whole keyword (after step 3) before matching. "A **or** B" means an item matching either one counts. Only these entries are supported.
 
 | Student writes | Treated as | Why |
 | --- | --- | --- |
 | mac n cheese, mac n chz, mac and chz | mac and cheese | Common spellings |
 | hashbrown, hashbrowns, hash browns | hash brown **or** hashbrown | The data spells it both ways |
 | hotdog, hotdogs | hot dog | Common spelling |
+| burger, burgers, hamburger, hamburgers | beef patty **or** turkey patty **or** veggie burger, where the item has exactly those words (so Turkey Sausage Patty does not match) | 9.4 question 1 |
 
-**Open (N-17 follow-up, part of N-40):** who maintains this list after launch. Suggested: you approve additions; developers add them to this section, the phrase corpus, and the tests in the same pull request.
+**Exclusions — Decided (N-40):**
 
-### 9.4 Questions for sign-off
+| Keyword (after step 4) | Never matches | Why |
+| --- | --- | --- |
+| beef patty, turkey patty, veggie burger (from the burger entry) | Items whose last word is "bun" | 9.4 question 1 |
+| fries | Items whose original name does not contain the word "fries" (excludes Orange Chicken Stir Fry) | 9.4 question 2 |
 
-These need your decision when you approve the spec:
+**Decided (N-40):** who maintains these lists after launch. The project owner approves additions. Developers add them to this section, the phrase corpus, and the tests in the same pull request.
 
-1. **"burger" and "hamburger."** Should "burger" also match Beef Patty and Turkey Patty, and should "hamburger" stop matching the bun? Suggested: add "burger" and "hamburger" as synonyms for "beef patty, turkey patty, veggie burger," and exclude items whose last word is "bun."
-2. **"fries" matching "Stir Fry."** Suggested: add an exclusion so "fries" matches only items containing "fries" before singular forms are applied.
-3. **"eggs" and "greens."** Leave as is (they are real words in those items), or exclude? Suggested: leave as is; the reply names the exact item, so the student can tell.
-4. **Wings.** No wings are on the current menu. Suggested: no synonym; "not on the menu" is the honest answer.
+### 9.4 Sign-off decisions
+
+**Decided** by the project owner at sign-off (N-40, 2026-10-24):
+
+1. **"burger" and "hamburger":** both match Beef Patty, Turkey Patty, and Veggie Burger. Items whose last word is "bun" are excluded (9.3).
+2. **"fries" matching "Stir Fry":** excluded. "fries" matches only items whose name contains "fries" (9.3).
+3. **"eggs" and "greens":** left as is. They are real words in those items, and the reply names the exact item, so the student can tell.
+4. **Wings:** no synonym. "Not on the menu" is the honest answer.
 
 ---
 
@@ -494,7 +509,7 @@ These need your decision when you approve the spec:
 | Provisional data is labeled in plain words ("sample menu," "not yet confirmed"). | **Decided** (PRD 3) |
 | Missing food is "not on the menu I have," never "not served." | **Decided** (schema doc section 13) |
 | Multi-station replies are grouped by station. If a reply is longer than Sendblue's limit (roadmap M7 step 1), split it between stations, never inside a station. | **Decided** (N-19) |
-| Station order: the data has no station-order column, so stations are listed alphabetically, as the schema doc's queries do. This puts "Grill / sandwich" before "Main hot-food." A different order would need a schema change. | **Proposed** (part of N-18) |
+| Station order: the data has no station-order column, so stations are listed alphabetically, as the schema doc's queries do. This puts "Grill / sandwich" before "Main hot-food." A different order would need a schema change. | **Decided (N-40)** as the default; N-18 may still change it |
 | Items within a station follow `display_order`. | **Decided** (schema doc section 10) |
 | Emojis, exact wording, and tone. | **Open (N-18)** |
 | Message text and phone numbers are never written to logs. | **Decided** (architecture section 8) |
@@ -515,13 +530,14 @@ Items this spec waits on. Each is in roadmap Section 1.
 | N-42 | Station prompt for weekend brunch | 7.1 |
 | N-43 | Which data counts as provisional | 6.5 |
 | N-44 | Food lookup for a finished meal | 7.4 |
-| N-40 | Sign-off on everything marked **Proposed**, including section 9.4 | All |
+
+N-40 (sign-off) was answered on 2026-10-24; see section 14.
 
 ---
 
 ## 12. Phrase corpus
 
-Expected readings for the test suite. Once `backend/` exists, this table becomes `tests/conversation/phrases.yaml`. Rows marked with an open item will change when it is answered. "Today" means no date phrase was given.
+Expected readings for the test suite. When the conversation tests are added, this table becomes `backend/tests/conversation/phrases.yaml`. Rows marked with an open item will change when it is answered. "Today" means no date phrase was given.
 
 | # | Message | Intent | Meal | Date | Station | Food keyword | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -568,6 +584,16 @@ Expected readings for the test suite. Once `backend/` exists, this table becomes
 | 41 | hi | help | | | | | Greeting |
 | 42 | help | help | | | | | N-11 |
 | 43 | STOP | opt_out | | | | | N-11 |
+| 44 | Do they have veggies? | food_lookup | | today | | veggie | "ie" form (9.1) |
+| 45 | any sausages for breakfast | food_lookup | breakfast | today | | sausage | Plain "s" rule (9.1) |
+| 46 | Do they have burgers? | food_lookup | | today | | burger | Beef Patty, Turkey Patty, Veggie Burger; not the bun (9.3) |
+| 47 | Do they have fries? | food_lookup | | today | | fry | French Fries only, not Stir Fry (9.3) |
+| 48 | Do they have sandwiches? | food_lookup | | today | | sandwich | No item match, so the Grill / sandwich menu (7.4 step 7) |
+| 49 | Do they have anything? | unclear | | | | | Nothing left after filler words, no meal word (section 5) |
+| 50 | May I see the dinner menu? | menu | dinner | today | | | "may" with no number is not a date (3.2) |
+| 51 | What's for dinner 11-25? | menu | dinner | unsupported | | | Ask to rephrase (3.2) |
+| 52 | What's at the turntable? | menu | dinner | today | Dinner / turntable | | Meal chosen from the station (7.1) |
+| 53 | When does the caf close? *(Mon 15:30)* | open_now | | today | | | "Nothing is being served right now. Dinner is served 5:00 to 8:00 PM." (7.3) |
 
 ---
 
@@ -594,3 +620,25 @@ Every row in `roadmap.md` Section 6 maps to a rule here.
 | 29 | 7.8 opt-out (N-11) |
 | 30, 31, 35 | 6.4 finished-meal rule (N-14) |
 | 32 | 6.1 local date vs UTC |
+
+---
+
+## 14. Sign-off record
+
+**Approved** October 24, 2026 by Johnson Addo Ameyaw, project owner (roadmap N-40). Every rule that was **Proposed** in the draft is now **Decided (N-40)**. Items marked **Open (N-xx)** are not covered and stay open (section 11).
+
+The draft was checked against the acceptance matrix (roadmap Section 6) and `db/seed.sql` (`mvp_v1_3`). These fixes were made before approval:
+
+| # | Section | Problem in the draft | Fix |
+| --- | --- | --- | --- |
+| 1 | 9.1 | "ies → y" turned "veggies" into "veggy", which misses every Veggie item | "ies" words also try the "ie" form |
+| 2 | 9.1 | "ses → drop es" turned "sausages" into "sausag", which misses every Sausage item | "ses" removed from the "es" list; the plain "s" rule applies |
+| 3 | 2, 3.2 | Normalization removed "-", so `11-25` could not be detected | Keep "-" between digits |
+| 4 | 3.2 | Month abbreviation "may" read "May I see the menu?" as a date | "may" counts only next to a number |
+| 5 | 3.4 | "anything" was not a filler word, so "Do they have anything?" became a food lookup | Added anything, something, food, stuff, you, yall, guys |
+| 6 | 7.1, 7.5 | No meal was defined for a station question with no meal (corpus rows 11, 12; "What's at the turntable?") | Meal is chosen from the station on that day's schedule |
+| 7 | 5, 7.4 | The note claimed the "pizza" lookup gives the same items as the Pizza station (false on Thursday: Calzone). "sandwiches" matched no item | Note corrected; a keyword that is a station alias and matches no item gives that station's menu |
+| 8 | 7.3 | "When does the caf close?" got a yes/no reply | "When"/"what time" with no meal gets a times reply |
+| 9 | 12 | Corpus path referred to a `backend/` that did not exist yet | Path updated to `backend/tests/conversation/phrases.yaml` |
+
+Section 9.4 decisions: "burger"/"hamburger" match the patties and Veggie Burger, not the bun; "fries" no longer matches Stir Fry; egg noodle and green beans hits stay; no wings synonym. Corpus rows 44–53 cover the fixes.
