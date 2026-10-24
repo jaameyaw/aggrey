@@ -52,7 +52,11 @@ jobs:
       - uses: astral-sh/setup-uv@v7
 
       - name: Run file checks
-        run: >
-          uvx pre-commit run --all-files
-          check-added-large-files check-merge-conflict check-yaml check-toml
-          detect-private-key end-of-file-fixer trailing-whitespace
+        run: |
+          uvx pre-commit run --all-files check-added-large-files
+          uvx pre-commit run --all-files check-merge-conflict
+          uvx pre-commit run --all-files check-yaml
+          uvx pre-commit run --all-files check-toml
+          uvx pre-commit run --all-files detect-private-key
+          uvx pre-commit run --all-files end-of-file-fixer
+          uvx pre-commit run --all-files trailing-whitespace
