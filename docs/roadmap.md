@@ -1,6 +1,6 @@
 # Aggrey MVP Roadmap and Next Steps
 
-**Status:** Planning. No application code, `verify.sql`, or deployments exist yet. `schema.sql` and `seed.sql` were added on 2026-10-24.
+**Status:** M0 (repository foundation) done on 2026-10-24, except step 1 (deferred) and the GitHub settings in step 8. No application code, `verify.sql`, or deployments exist yet. `db/schema.sql` and `db/seed.sql` were added on 2026-10-24.
 **Created:** October 24, 2026
 **Last updated:** October 24, 2026 (answers to N-03, N-12, N-14, N-17, N-19; new module MS and its draft spec; new questions N-40 to N-44)
 **Applies to:** the MVP defined in `Aggrey_MVP_PRD.md`, `Aggrey_Technical_Architecture.md`, and `Aggrey_MVP_Database_Schema.md`.
@@ -33,7 +33,7 @@ Where an option is labeled "suggested," it is a proposal for you to accept or re
 
 | ID | What is needed | Blocks |
 | --- | --- | --- |
-| N-01 | Confirm GitHub repository `jaameyaw/aggrey` is the official repo and whether it should be public or private. | M0 |
+| N-01 | Confirm GitHub repository `jaameyaw/aggrey` is the official repo and whether it should be public or private. **Answer (2026-10-24):** official repo, private. | M0 |
 | N-02 | Supabase: create (or grant access to) the Aggrey project. Provide the project region and who owns the account. Credentials go into a secrets manager or `.env` locally, **never** into chat or Git. | M1, M2 |
 | N-03 | Sendblue: account, plan name, assigned Aggrey phone number, API key ID and secret, and webhook signing secret. Confirm any plan limits (messages per day, contacts, iMessage vs SMS fallback). **Answer (2026-10-24), partial:** Sendblue falls back to SMS when the recipient does not use iMessage, so students without iPhones are supported. Public copy says "text," not "iMessage." Account, number, keys, and plan limits are still needed. | M7, M8, M10 |
 | N-04 | Render: account and plan for the FastAPI service. Confirm whether a paid always-on instance is acceptable (see N-24). | M9 |
@@ -88,15 +88,15 @@ Where an option is labeled "suggested," it is a proposal for you to accept or re
 | ID | Question | Blocks |
 | --- | --- | --- |
 | N-24 | **Hosting tier.** Some free hosting tiers sleep when idle, which can slow or miss webhook replies. Approve an always-on paid Render instance for the pilot, or accept the risk after testing. | M9 |
-| N-31 | **Repository location.** The repo is inside OneDrive. Syncing `.git`, `.venv`, and `node_modules` through OneDrive often causes file locks and conflicts. Suggested: move the working copy outside OneDrive (for example `C:\dev\aggrey`), with GitHub as the backup. Approve or reject. | M0 |
-| N-32 | **Folder layout.** The architecture doc suggests `backend/`, `web/`, `db/`, `data/`, and `docs/`. Approve moving the existing docs into `docs/` and `mvp dining data/` into `data/` (removing the space in the folder name). | M0 |
+| N-31 | **Repository location.** The repo is inside OneDrive. Syncing `.git`, `.venv`, and `node_modules` through OneDrive often causes file locks and conflicts. Suggested: move the working copy outside OneDrive (for example `C:\dev\aggrey`), with GitHub as the backup. Approve or reject. **Deferred (2026-10-24):** M0 step 1 was skipped; the working copy stays in OneDrive for now. Expect OneDrive to sync `backend/.venv`; if file locks or sync conflicts appear, move the clone outside OneDrive. | M0 |
+| N-32 | **Folder layout.** The architecture doc suggests `backend/`, `web/`, `db/`, `data/`, and `docs/`. Approve moving the existing docs into `docs/` and `mvp dining data/` into `data/` (removing the space in the folder name). **Answer (2026-10-24):** approved and applied in M0. | M0 |
 | N-33 | **Database access method from FastAPI.** Choose one: (a) Supabase Python client over HTTPS using the secret key (matches the env names in the architecture doc; bypasses RLS), or (b) direct Postgres connection via the Supabase connection pooler, ideally with a dedicated read-only role. Option (b) needs a small approved addition to the audited schema: a read-only role and select policies. | M1, M3, M5 |
-| N-34 | **Tooling versions.** Suggested: Python 3.12 with `uv` for dependencies; Node.js current LTS with `pnpm` (or `npm`). Approve or specify. | M0 |
-| N-35 | **Local database for tests.** Is Docker available on your development machine? If yes, integration tests can run against a local Postgres or the Supabase CLI. If not, tests run against a separate Supabase test project (needs N-02 access). | M1, M10 |
+| N-34 | **Tooling versions.** Suggested: Python 3.12 with `uv` for dependencies; Node.js current LTS with `pnpm` (or `npm`). Approve or specify. **Answer (2026-10-24), partial:** Python 3.13 with `uv`. The Node.js package manager is still open; decide it before M8. | M0 |
+| N-35 | **Local database for tests.** Is Docker available on your development machine? If yes, integration tests can run against a local Postgres or the Supabase CLI. If not, tests run against a separate Supabase test project (needs N-02 access). **Note (2026-10-24):** Docker is installed on the project owner's machine. Still confirm for the database developer's machine. | M1, M10 |
 | N-36 | **Environments.** One Supabase project (production only), or two (staging plus production)? Same question for Render and Sendblue numbers. | M9 |
 | N-37 | **Usage metrics without storing messages.** The PRD wants counts of questions, unique testers, and top intents. Approve logging intent plus a salted hash of the phone number (no message text, no raw numbers). | M7, M11 |
 | N-38 | **Pilot plan.** Who are the testers, how many, what start date, and how long does the pilot run? | M10, M11 |
-| N-39 | **Code review.** Who reviews and approves pull requests? If solo, is AI-assisted review plus CI acceptable as the merge gate? | M0 |
+| N-39 | **Code review.** Who reviews and approves pull requests? If solo, is AI-assisted review plus CI acceptable as the merge gate? **Answer (2026-10-24):** two developers. The project owner leads; a second developer owns the database and Supabase work (M1, M2) on the `database/supabase` branch. Every pull request needs passing CI and one approval from the other developer. | M0 |
 
 ---
 
@@ -104,17 +104,17 @@ Where an option is labeled "suggested," it is a proposal for you to accept or re
 
 Resolve these before or during M0. Do not silently work around them.
 
-1. `Aggrey_Technical_Architecture.md` refers to `Aggrey_MVP_PRD_Build_Ready.md`. The actual file is `Aggrey_MVP_PRD.md`. Fix the reference.
-2. The architecture doc refers to `db/schema.sql`, `db/seed.sql`, and `db/verify.sql`. **Updated 2026-10-24:** `schema.sql` and `seed.sql` now exist at the repo root, not in `db/`. Checked on 2026-10-24:
+1. ~~`Aggrey_Technical_Architecture.md` refers to `Aggrey_MVP_PRD_Build_Ready.md`.~~ **Fixed 2026-10-24 (M0):** the reference now points to `Aggrey_MVP_PRD.md`.
+2. The architecture doc refers to `db/schema.sql`, `db/seed.sql`, and `db/verify.sql`. **Updated 2026-10-24:** `schema.sql` and `seed.sql` were added and moved into `db/` in M0. Checked on 2026-10-24:
    - `schema.sql` is identical to the SQL in `Aggrey_MVP_Database_Schema.md` section 4.
    - `seed.sql` contains 223 menu, 10 hours, 11 holiday, and 11 metadata rows, which matches dataset `mvp_v1_2`.
    - `verify.sql` still does not exist (M1 creates it).
    - The script that generated `seed.sql` from the workbook is not in the repo (M2 adds one).
-   - Move both files into `db/` in M0 if N-32 is approved.
+   - Both files are now in `db/` (M0, N-32).
 3. The PRD mentions a "future-development list." It is not in the repo. Nothing from it may be built until it exists and is approved.
 4. Holiday and break dinner wording differs between the PRD and the schema doc. Resolved by N-16.
 5. ~~The README says "iMessage." The PRD says "text" via Sendblue.~~ **Resolved 2026-10-24 (N-03):** SMS is supported through Sendblue's fallback. The README now says "text."
-6. All project documents, `schema.sql`, `seed.sql`, and this roadmap are untracked in Git (only `README.md` is committed). Commit them in M0 so changes are reviewable.
+6. ~~All project documents, `schema.sql`, `seed.sql`, and this roadmap are untracked in Git.~~ **Fixed 2026-10-24 (M0):** committed as "docs: add MVP specification."
 7. **Confirmed 2026-10-24:** the metadata key `holiday_brunch_source = saturday_sample` only records where the holiday sample came from. The runtime menu scope is `holiday_sample`. Code must query `menu_scope = 'holiday_sample'` and must never query or copy Saturday (`day_of_week = 6`) rows for a holiday or break. M5 implements this rule and tests it.
 8. ~~**Lunch "I don't know" behavior conflict.**~~ **Resolved 2026-10-24:** a one-line explanation of the stations, then the lunch menu grouped by station. The PRD and acceptance row 5 are updated.
 9. **Intent list mismatch.** PRD FR-2 names four intents: menu lookup, hours lookup, food-item lookup, and unsupported/unclear. M6 below also names "open-now" and "help," and N-11 adds opt-out keywords. The Intent and Logic Specification (MS) must settle the final list, and the PRD should then be updated to match. The draft spec (section 4) proposes keeping the PRD's four dining intents, treating "open now" as part of hours lookup, and adding `follow_up`, `help`, and `opt_out` as conversation controls. This is resolved when N-40 is signed off.
@@ -250,7 +250,7 @@ MS (Intent and Logic Specification) is a document, not code. It needs no other m
 
 **Goal:** one approved document that says exactly what Aggrey understands and how it answers. Aggrey is rule-based, so the rules must be written down before they are coded. Without this document, each developer would decide behavior in code, and the tests would have nothing to check against.
 **Depends on:** nothing (documents only). Start now, in parallel with M0–M3.
-**Status:** first draft written 2026-10-24 as `Aggrey_Intent_Logic_Spec.md` (repo root; moves to `docs/` if N-32 is approved). Awaiting review and sign-off (N-40).
+**Status:** first draft written 2026-10-24 as `docs/Aggrey_Intent_Logic_Spec.md`. Awaiting review and sign-off (N-40).
 **Needs from you:** N-11, N-13, N-15, N-16, N-18, N-20, N-21, N-22, N-41, N-42, N-43, N-44, and final sign-off N-40. N-12, N-14, N-17, and N-19 are answered.
 
 **Steps**
@@ -291,7 +291,7 @@ MS (Intent and Logic Specification) is a document, not code. It needs no other m
 
 **Steps**
 
-1. `schema.sql` already exists and matches `Aggrey_MVP_Database_Schema.md` section 4 (checked 2026-10-24). Move it to `db/schema.sql` without edits (N-32). Add a CI check that fails if the file and the doc's section 4 SQL drift apart. Do not redesign tables (architecture section 5).
+1. `db/schema.sql` already exists and matches `Aggrey_MVP_Database_Schema.md` section 4 (checked 2026-10-24). Do not edit it. Add a CI check that fails if the file and the doc's section 4 SQL drift apart. Do not redesign tables (architecture section 5).
 2. If N-33 chooses a dedicated read-only role, write that change as a separate, reviewed migration file (for example `db/migrations/002_readonly_role.sql`) and record an ADR. Do not edit the audited file silently.
 3. Write `db/verify.sql` to check:
    - The four tables, two enums, triggers, and RLS settings exist.
@@ -316,7 +316,7 @@ MS (Intent and Logic Specification) is a document, not code. It needs no other m
 **Depends on:** M1.
 **Needs from you:** N-23, N-25, N-26, N-27, N-28. Import can start with current data; these answers may change data later.
 
-A `seed.sql` already exists (added 2026-10-24). It says it was generated from the workbook, and its row counts match `mvp_v1_2`, but the script that produced it is not in the repo. Use it for M1 testing now. This module adds the generator so future data changes are repeatable and reviewable.
+A `db/seed.sql` already exists (added 2026-10-24). It says it was generated from the workbook, and its row counts match `mvp_v1_2`, but the script that produced it is not in the repo. Use it for M1 testing now. This module adds the generator so future data changes are repeatable and reviewable.
 
 **Steps**
 

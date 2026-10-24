@@ -10,7 +10,7 @@ Aggrey is a text-based campus dining assistant for Livingstone College. Students
 
 The MVP supports recurring weekly menus, five weekday lunch stations, food searches, serving hours, and dated holiday/break overrides. It uses deterministic rules, **not an LLM**.
 
-This document describes **how to build the approved PRD**. It does not introduce new product features. For product behavior, use `Aggrey_MVP_PRD_Build_Ready.md`; for executable data definitions, use the audited `db/schema.sql`.
+This document describes **how to build the approved PRD**. It does not introduce new product features. For product behavior, use `Aggrey_MVP_PRD.md`; for executable data definitions, use the audited `db/schema.sql`.
 
 ## 2. System overview
 
