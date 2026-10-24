@@ -33,12 +33,11 @@ Over time, Aggrey can become a direct communication layer between campus dining 
 
 ```text
 backend/   FastAPI service (Python 3.13, uv): domain rules, adapters, tests
+frontend/  Landing page (Next.js, TypeScript, pnpm), deployed on Vercel
 db/        schema.sql, seed.sql (and later verify.sql and the seed generator)
 data/      Aggrey_MVP_Data.xlsx (source of truth) and its Markdown mirror
 docs/      PRD, architecture, database schema, intent and logic spec, roadmap
 ```
-
-The landing page (`web/`) is added in roadmap module M8.
 
 Start with [`docs/roadmap.md`](docs/roadmap.md) for the build plan and open questions, and [`CONTRIBUTING.md`](CONTRIBUTING.md) for branch, commit, and review rules.
 
@@ -47,9 +46,14 @@ Start with [`docs/roadmap.md`](docs/roadmap.md) for the build plan and open ques
 ### Prerequisites
 
 - [uv](https://docs.astral.sh/uv/) (installs Python 3.13 for you if needed)
+- [Node.js](https://nodejs.org/) 20.9 or newer (the project uses 24) and [pnpm](https://pnpm.io/)
 - Git
 
-### Set up
+### Frontend
+
+See [`frontend/README.md`](frontend/README.md). In short: `cd frontend`, `pnpm install`, `pnpm dev`.
+
+### Backend set up
 
 ```bash
 cd backend
@@ -59,7 +63,7 @@ uv run pre-commit install
 
 `pre-commit install` runs the checks below automatically before each commit.
 
-### Check and test
+### Backend check and test
 
 Run from `backend/`:
 

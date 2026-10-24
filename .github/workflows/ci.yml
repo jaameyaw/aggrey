@@ -21,9 +21,9 @@ jobs:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
 
@@ -42,27 +42,67 @@ jobs:
       - name: Test
         run: uv run pytest
 
+  frontend:
+    name: Frontend (lint, typecheck, format)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: frontend/package.json
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type check
+        run: pnpm typecheck
+
+      - name: Format check
+        run: pnpm format:check
+
   repo-hygiene:
     name: Repository hygiene
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
 
       - name: Run file checks
-        run: >
-          uvx pre-commit run --all-files
-          check-added-large-files check-merge-conflict check-yaml check-toml
-          detect-private-key end-of-file-fixer trailing-whitespace
+        run: |
+          for hook in \
+            check-added-large-files \
+            check-merge-conflict \
+            check-yaml \
+            check-toml \
+            detect-private-key \
+            end-of-file-fixer \
+            trailing-whitespace
+          do
+            uvx pre-commit run --all-files "$hook"
+          done
 
   schema-sync:
     name: Schema matches docs (DDL)
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Check db/schema.sql matches schema doc section 4
         run: python3 db/check_schema_sync.py

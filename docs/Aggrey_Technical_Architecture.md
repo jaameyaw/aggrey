@@ -140,7 +140,7 @@ Suggested simple structure:
 
 ```text
 backend/             FastAPI routes, Sendblue adapter, dining services, tests
-web/                 Next.js landing page
+frontend/            Next.js landing page
 db/                  audited schema.sql, seed.sql, verify.sql
 data/                Aggrey_MVP_Data.xlsx and readable mirror
 docs/                PRD, architecture, schema reference, roadmap
