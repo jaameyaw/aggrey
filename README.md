@@ -1,6 +1,6 @@
 # Aggrey
 
-Students should not have to walk across campus just to find out the cafeteria is closed, lunch is over, or the food they wanted is not being served.
+Students should not have to walk across campus just to find out the cafeteria is closed, lunch is over, or the food they wanted is not being served. Or download an app/ search through tons of websites to know what's at the caf
 
 Campus dining information is often scattered across menus, schedules, websites, and last-minute updates. Even when the information exists, students still have to find it, interpret it, and hope it is current.
 
@@ -15,7 +15,7 @@ Students can text naturally:
 
 They do not need to download an app, search through a dashboard, or phrase their question in a specific way.
 
-**Just text Aggrey on iMessage and get a response within seconds.**
+**Just text Aggrey and get a response within seconds.**
 
 Aggrey interprets what the student means, checks the current dining information, and responds with a short, factual answer.
 
