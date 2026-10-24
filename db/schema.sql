@@ -1,5 +1,5 @@
 -- Aggrey MVP database schema. Final alignment audit (2026-10-24).
--- Authoritative dataset: Aggrey_MVP_Data.xlsx (dataset_version mvp_v1_2).
+-- Authoritative dataset: Aggrey_MVP_Data.xlsx (dataset_version mvp_v1_3).
 -- Fresh Supabase PostgreSQL project only. Execute once before seed.sql.
 -- Exactly four public tables; weekly menu entries have NO service_date.
 
@@ -27,7 +27,7 @@ CREATE TABLE public.menus (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     CONSTRAINT menus_schedule_compatible CHECK (
         (menu_scope = 'holiday_sample'
-         AND day_of_week IS NULL AND meal_type = 'brunch')
+         AND day_of_week IS NULL AND meal_type IN ('brunch', 'dinner'))
         OR (menu_scope = 'weekly'
             AND day_of_week IS NOT NULL
             AND day_of_week BETWEEN 1 AND 5

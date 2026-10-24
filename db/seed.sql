@@ -235,7 +235,11 @@ INSERT INTO public.menus (menu_scope, day_of_week, meal_type, station, food_item
     ('holiday_sample', NULL, 'brunch', 'Grill / sandwich', 'White Hamburger Bun', 7),
     ('holiday_sample', NULL, 'brunch', 'Pizza', 'Cheese Pizza', 1),
     ('holiday_sample', NULL, 'brunch', 'Pizza', 'Pepperoni Pizza', 2),
-    ('holiday_sample', NULL, 'brunch', 'Pizza', 'Roasted Vegetable Pizza', 3)
+    ('holiday_sample', NULL, 'brunch', 'Pizza', 'Roasted Vegetable Pizza', 3),
+    ('holiday_sample', NULL, 'dinner', 'Dinner / turntable', 'Beef Stroganoff', 1),
+    ('holiday_sample', NULL, 'dinner', 'Dinner / turntable', 'Butter Egg Noodle', 2),
+    ('holiday_sample', NULL, 'dinner', 'Dinner / turntable', 'Steamed Broccoli', 3),
+    ('holiday_sample', NULL, 'dinner', 'Dinner / turntable', 'Oregano Roasted Carrots', 4)
 ON CONFLICT DO NOTHING;
 INSERT INTO public.hours (schedule_type, meal_type, start_time, end_time) VALUES
     ('weekday', 'breakfast', '07:30', '09:30'),
@@ -268,13 +272,13 @@ ON CONFLICT (name, start_date, end_date) DO UPDATE SET
     verification_status = EXCLUDED.verification_status,
     notes = EXCLUDED.notes;
 INSERT INTO public.metadata ("key", value, notes) VALUES
-    ('dataset_version', 'mvp_v1_2', 'Corrected weekday breakfast mapping and removed redundant weekend breakfast entries; other source data unchanged.'),
+    ('dataset_version', 'mvp_v1_3', 'Added the provisional holiday and break dinner sample (copied from Saturday dinner); other source data unchanged from mvp_v1_2.'),
     ('timezone', 'America/New_York', 'College local time'),
     ('menu_recurrence', 'weekly', 'Repeat weekly without tying menu items to calendar dates'),
     ('update_policy', 'manual', 'Until manager provides an update process'),
     ('lunch_station_count', '5', 'Main hot-food, Special, Grill / sandwich, Pasta, Pizza'),
     ('holiday_brunch_source', 'saturday_sample', 'Provisional holiday brunch menu'),
-    ('holiday_dinner_fallback', 'day_of_week_dinner', 'Test assumption only, not verified holiday dinner menu'),
+    ('holiday_dinner_source', 'saturday_sample', 'Provisional holiday and break dinner menu'),
     ('lite_lunch_menu_status', 'missing', 'Lite Lunch hours exist; food menu not supplied'),
     ('thanksgiving_christmas_hours_rule', 'break', 'Same serving hours as Fall Break'),
     ('virtual_classes_hours_status', 'break_template_provisional', 'Virtual classes and exams use the break schedule for MVP testing; manager confirmation is still pending.'),
