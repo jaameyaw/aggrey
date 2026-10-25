@@ -5,9 +5,10 @@
 -- live Supabase project once real data matters. To run it, set the confirmation
 -- flag in the same session first, e.g. as the first line in the SQL editor:
 --     SET aggrey.confirm_reset = 'yes';
+-- The flag is cleared on success, so every reset needs its own confirmation.
 --
--- The drops also remove migration 001's grants and policies (the
--- aggrey_readonly role itself survives). Afterwards re-run, in order:
+-- The drops also remove migration 001's table grants and policies (the
+-- aggrey_readonly role and its schema USAGE survive). Afterwards re-run, in order:
 --     schema.sql -> seed.sql -> migrations/001_readonly_role.sql -> verify.sql
 
 BEGIN;
@@ -31,3 +32,5 @@ DROP TYPE IF EXISTS public.meal_type;
 DROP TYPE IF EXISTS public.schedule_type;
 
 COMMIT;
+
+RESET aggrey.confirm_reset;

@@ -12,7 +12,7 @@ design and `docs/roadmap.md` modules M1–M2 for the plan.
 | `seed.sql` | Initial data import, dataset `mvp_v1_3` (227 menu, 10 hours, 11 holiday, 11 metadata rows). Generated from `data/Aggrey_MVP_Data.xlsx`; re-running is duplicate-safe. Do not hand-edit — regenerate from the workbook (M2). |
 | `migrations/001_readonly_role.sql` | Read-only backend role `aggrey_readonly` (SELECT grant + `FOR SELECT` policy per table, no write). Idempotent. See `docs/adr/0001-database-access-method.md`. |
 | `verify.sql` | Read-only structural + content checks. Raises one exception listing every failure, or a `verify.sql: ALL CHECKS PASSED` notice. Makes no changes. |
-| `reset_schema.sql` | **Destructive** dev helper: drops all four tables and their data so `schema.sql` can run again. Refuses unless `SET aggrey.confirm_reset = 'yes';` runs first in the same session. Never run on the live project once real data matters. |
+| `reset_schema.sql` | **Destructive** dev helper: drops all four tables and their data so `schema.sql` can run again. Refuses unless `SET aggrey.confirm_reset = 'yes';` runs first in the same session; the flag is cleared after each reset. Never run on the live project once real data matters. |
 | `check_schema_sync.py` | CI check (`schema-sync` job) that `schema.sql` matches section 4 of the schema doc. |
 
 ## Run order
@@ -67,4 +67,5 @@ all five lunch stations present per weekday; zero `lite_lunch` menu rows; and `h
 rows exist, carry a null `day_of_week`, and include both brunch and dinner.
 
 Access (migration 001): role `aggrey_readonly` exists, has SELECT and no write privilege on all
-four tables, and each table has its `aggrey_readonly_select` policy.
+four tables (including column-level INSERT/UPDATE), and each table has its
+`aggrey_readonly_select` policy scoped to that role only.

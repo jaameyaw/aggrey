@@ -219,20 +219,27 @@ BEGIN
                     failures := failures
                         || format('aggrey_readonly lacks SELECT on public.%s', item);
                 END IF;
-                IF has_table_privilege('aggrey_readonly', 'public.' || item,
-                                       'INSERT, UPDATE, DELETE, TRUNCATE') THEN
+                -- has_any_column_privilege also catches column-level
+                -- INSERT/UPDATE grants, which has_table_privilege ignores.
+                IF has_any_column_privilege('aggrey_readonly', 'public.' || item,
+                                            'INSERT, UPDATE')
+                   OR has_table_privilege('aggrey_readonly', 'public.' || item,
+                                          'DELETE, TRUNCATE') THEN
                     failures := failures
                         || format('aggrey_readonly has a write privilege on public.%s', item);
                 END IF;
+                -- The policy must be scoped to aggrey_readonly alone: the same
+                -- name with TO public would expose every row to anon on Supabase.
                 IF NOT EXISTS (
                     SELECT 1 FROM pg_policies
                     WHERE schemaname = 'public'
                       AND tablename = item
                       AND policyname = 'aggrey_readonly_select'
                       AND cmd = 'SELECT'
+                      AND roles = ARRAY['aggrey_readonly']::name[]
                 ) THEN
                     failures := failures
-                        || format('missing policy aggrey_readonly_select on public.%s', item);
+                        || format('missing policy aggrey_readonly_select (FOR SELECT TO aggrey_readonly) on public.%s', item);
                 END IF;
             END LOOP;
         END IF;
