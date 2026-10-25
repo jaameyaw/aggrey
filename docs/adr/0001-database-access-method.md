@@ -41,7 +41,8 @@ from the four tables. Created by `db/migrations/001_readonly_role.sql`.
 - One migration adds the role, `GRANT SELECT` on the four tables, and a
   `FOR SELECT` RLS policy per table (needed because RLS is on with no policies).
 - The role's **login password is never committed**. It is set out of band in the
-  Supabase dashboard (`ALTER ROLE aggrey_readonly PASSWORD '<secret>'`) and stored
+  Supabase dashboard (`ALTER ROLE aggrey_readonly WITH LOGIN PASSWORD '<secret>'`;
+  the migration creates the role `NOLOGIN`, so `WITH LOGIN` is required) and stored
   only in a secrets manager / `.env`.
 - **To verify during M3** (do not assume): the exact Supabase pooler connection
   string and username format, whether a custom login role connects via the pooler
