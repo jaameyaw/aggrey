@@ -1,6 +1,6 @@
 # Aggrey MVP Roadmap and Next Steps
 
-**Status:** M0 (repository foundation) done on 2026-10-24, except step 1 (deferred) and the GitHub settings in step 8. No application code, `verify.sql`, or deployments exist yet. `db/schema.sql` and `db/seed.sql` were added on 2026-10-24.
+**Status:** M0 (repository foundation) done on 2026-10-24, except the GitHub settings in step 8 (step 1 done later the same day; see N-31). M3 (backend skeleton) done on 2026-10-24. No dining logic or deployments exist yet. `db/schema.sql` and `db/seed.sql` were added on 2026-10-24.
 **Created:** October 24, 2026
 **Last updated:** October 24, 2026 (answers to N-03, N-12, N-13, N-14, N-15, N-16, N-17, N-19; holiday dinner sample added as dataset `mvp_v1_3`; new module MS and its draft spec; new questions N-40 to N-44; Intent and Logic Spec approved, N-40)
 **Applies to:** the MVP defined in `Aggrey_MVP_PRD.md`, `Aggrey_Technical_Architecture.md`, and `Aggrey_MVP_Database_Schema.md`.
@@ -88,7 +88,7 @@ Where an option is labeled "suggested," it is a proposal for you to accept or re
 | ID | Question | Blocks |
 | --- | --- | --- |
 | N-24 | **Hosting tier.** Some free hosting tiers sleep when idle, which can slow or miss webhook replies. Approve an always-on paid Render instance for the pilot, or accept the risk after testing. | M9 |
-| N-31 | **Repository location.** The repo is inside OneDrive. Syncing `.git`, `.venv`, and `node_modules` through OneDrive often causes file locks and conflicts. Suggested: move the working copy outside OneDrive (for example `C:\dev\aggrey`), with GitHub as the backup. Approve or reject. **Deferred (2026-10-24):** M0 step 1 was skipped; the working copy stays in OneDrive for now. Expect OneDrive to sync `backend/.venv`; if file locks or sync conflicts appear, move the clone outside OneDrive. | M0 |
+| N-31 | **Repository location.** The repo is inside OneDrive. Syncing `.git`, `.venv`, and `node_modules` through OneDrive often causes file locks and conflicts. Suggested: move the working copy outside OneDrive (for example `C:\dev\aggrey`), with GitHub as the backup. Approve or reject. **Done (2026-10-24):** after venv problems under OneDrive, the working copy moved to `C:\dev\aggrey`; `backend/.venv` now lives there, outside OneDrive. | M0 |
 | N-32 | **Folder layout.** The architecture doc suggests `backend/`, `web/`, `db/`, `data/`, and `docs/`. Approve moving the existing docs into `docs/` and `mvp dining data/` into `data/` (removing the space in the folder name). **Answer (2026-10-24):** approved and applied in M0. The landing page folder is named `frontend/` instead of `web/` (decided 2026-10-24). | M0 |
 | N-33 | **Database access method from FastAPI.** Choose one: (a) Supabase Python client over HTTPS using the secret key (matches the env names in the architecture doc; bypasses RLS), or (b) direct Postgres connection via the Supabase connection pooler, ideally with a dedicated read-only role. Option (b) needs a small approved addition to the audited schema: a read-only role and select policies. **Answer (2026-10-24):** Option (b). The backend reads as a dedicated least-privilege Postgres role (`aggrey_readonly`, SELECT only), via the Supabase pooler. Implemented by `db/migrations/001_readonly_role.sql`; rationale in `docs/adr/0001-database-access-method.md`. | M1, M3, M5 |
 | N-34 | **Tooling versions.** Suggested: Python 3.12 with `uv` for dependencies; Node.js current LTS with `pnpm` (or `npm`). Approve or specify. **Answer (2026-10-24):** Python 3.13 with `uv`; Node.js 24 with `pnpm`. | M0 |
@@ -357,6 +357,8 @@ A `db/seed.sql` already exists (added 2026-10-24). It says it was generated from
 ---
 
 ### M3. Backend skeleton
+
+**Status:** done 2026-10-24. Repository integration tests pass against a disposable local `postgres:16`; the app starts against a seeded local database via `uv run python -m aggrey` (forces a selector event loop, which psycopg async needs on Windows) and `/health` returns status and version.
 
 **Goal:** a running FastAPI service with configuration, logging, a health check, and a database access layer, with no dining logic yet.
 **Depends on:** M0. Database access needs M1.

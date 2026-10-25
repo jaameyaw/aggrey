@@ -69,6 +69,7 @@ Run from `backend/`:
 
 | Task | Command |
 | --- | --- |
+| Run locally (needs `DATABASE_URL` in the environment or `backend/.env`) | `uv run python -m aggrey` |
 | Lint | `uv run ruff check .` |
 | Format | `uv run ruff format .` (CI runs `--check`) |
 | Type check | `uv run mypy` |
