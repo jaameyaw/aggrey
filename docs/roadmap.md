@@ -1,8 +1,8 @@
 # Aggrey MVP Roadmap and Next Steps
 
-**Status:** M0 (repository foundation) done on 2026-10-24, except the GitHub settings in step 8 (step 1 done later the same day; see N-31). M3 (backend skeleton) done on 2026-10-24. No dining logic or deployments exist yet. `db/schema.sql` and `db/seed.sql` were added on 2026-10-24.
+**Status:** M0 (repository foundation) done on 2026-10-24, except the GitHub settings in step 8 (step 1 done later the same day; see N-31). M1 (database schema on Supabase) done on 2026-10-25. M2 (data import from the workbook) done on 2026-10-27. M3 (backend skeleton) done on 2026-10-24. No dining logic or deployments exist yet. `db/schema.sql` and `db/seed.sql` were added on 2026-10-24.
 **Created:** October 24, 2026
-**Last updated:** October 24, 2026 (answers to N-03, N-12, N-13, N-14, N-15, N-16, N-17, N-19; holiday dinner sample added as dataset `mvp_v1_3`; new module MS and its draft spec; new questions N-40 to N-44; Intent and Logic Spec approved, N-40)
+**Last updated:** October 27, 2026 (M1 and M2 marked done). Earlier, October 24, 2026 (answers to N-03, N-12, N-13, N-14, N-15, N-16, N-17, N-19; holiday dinner sample added as dataset `mvp_v1_3`; new module MS and its draft spec; new questions N-40 to N-44; Intent and Logic Spec approved, N-40)
 **Applies to:** the MVP defined in `Aggrey_MVP_PRD.md`, `Aggrey_Technical_Architecture.md`, and `Aggrey_MVP_Database_Schema.md`.
 
 This roadmap breaks the MVP into modules. Each module lists its goal, dependencies, the inputs required from the project owner, step-by-step work, deliverables, and a definition of done. It adds no product features beyond the PRD.
@@ -108,8 +108,8 @@ Resolve these before or during M0. Do not silently work around them.
 2. The architecture doc refers to `db/schema.sql`, `db/seed.sql`, and `db/verify.sql`. **Updated 2026-10-24:** `schema.sql` and `seed.sql` were added and moved into `db/` in M0. Checked on 2026-10-24:
    - `schema.sql` is identical to the SQL in `Aggrey_MVP_Database_Schema.md` section 4.
    - `seed.sql` contains 223 menu, 10 hours, 11 holiday, and 11 metadata rows, which matches dataset `mvp_v1_2`. **Updated 2026-10-24 (N-16):** dataset `mvp_v1_3` adds four holiday dinner rows, so `seed.sql` now has 227 menu rows. `schema.sql` and the schema doc section 4 were changed together and are still identical.
-   - `verify.sql` still does not exist (M1 creates it).
-   - The script that generated `seed.sql` from the workbook is not in the repo (M2 adds one).
+   - ~~`verify.sql` still does not exist (M1 creates it).~~ **Fixed 2026-10-25 (M1):** `db/verify.sql` added (PRs #8, #10).
+   - ~~The script that generated `seed.sql` from the workbook is not in the repo (M2 adds one).~~ **Fixed 2026-10-27 (M2):** `db/generate_seed.py` regenerates `seed.sql` byte-for-byte from the workbook (PR #12).
    - Both files are now in `db/` (M0, N-32).
 3. The PRD mentions a "future-development list." It is not in the repo. Nothing from it may be built until it exists and is approved.
 4. ~~Holiday and break dinner wording differs between the PRD and the schema doc.~~ **Resolved 2026-10-24 (N-16):** both now describe the `holiday_sample` dinner copied from Saturday.
@@ -301,6 +301,8 @@ The database developer works on the `database/supabase` branch (N-39).
 
 ### M1. Database schema on Supabase
 
+**Status:** done 2026-10-25 (PRs #8, #10). `db/verify.sql`, the `schema-sync` CI check, and migration `001_readonly_role.sql` (N-33 option b, ADR 0001) are merged. Schema, seed (`mvp_v1_3`), migration 001, and `verify.sql` were run and pass on the live Supabase project, and RLS blocks the `anon` and `authenticated` roles. Verification was also exercised against a disposable local `postgres:16`.
+
 **Goal:** the audited four-table schema running on Supabase, with a repeatable verification script.
 **Depends on:** M0.
 **Needs from you:** N-02, N-33, N-35, N-36.
@@ -327,6 +329,8 @@ The database developer works on the `database/supabase` branch (N-39).
 ---
 
 ### M2. Data import from the workbook
+
+**Status:** done 2026-10-27 (PR #12). `db/generate_seed.py` validates the workbook and reproduces `db/seed.sql` byte-for-byte; 25 unit tests in `db/tests/`; the `seed-data` CI job fails if `seed.sql` or `data/Aggrey_MVP_Data.md` drifts from the workbook. Live Supabase already holds this exact `mvp_v1_3` data. Step 6's full-sync approach is still deferred to M11. Follow-up (not blocking): derive the INSERT column lists from `COLUMNS` and tie the generator's enum and meal rules to `schema.sql`.
 
 **Goal:** load `Aggrey_MVP_Data.xlsx` into PostgreSQL through a validated, repeatable, transactional process.
 **Depends on:** M1.
