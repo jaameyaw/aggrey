@@ -106,3 +106,21 @@ jobs:
 
       - name: Check db/schema.sql matches schema doc section 4
         run: python3 db/check_schema_sync.py
+
+  seed-data:
+    name: Seed and mirror match the workbook
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v7
+
+      - name: Unit tests for the seed generator
+        run: uv run --no-project --with pytest python -m pytest db/tests -q
+
+      - name: db/seed.sql is regenerated from the workbook
+        run: uv run --no-project --with openpyxl python db/generate_seed.py --check
+
+      - name: Markdown mirror matches the workbook
+        run: uv run --no-project --with openpyxl python db/generate_seed.py --check-mirror
