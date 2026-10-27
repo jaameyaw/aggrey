@@ -14,6 +14,7 @@ design and `docs/roadmap.md` modules M1–M2 for the plan.
 | `verify.sql` | Read-only structural + content checks. Raises one exception listing every failure, or a `verify.sql: ALL CHECKS PASSED` notice. Makes no changes. |
 | `reset_schema.sql` | **Destructive** dev helper: drops all four tables and their data so `schema.sql` can run again. Refuses unless `SET aggrey.confirm_reset = 'yes';` runs first in the same session; the flag is cleared after each reset. Never run on the live project once real data matters. |
 | `check_schema_sync.py` | CI check (`schema-sync` job) that `schema.sql` matches section 4 of the schema doc. |
+| `generate_seed.py` | Regenerates `seed.sql` from the workbook with validation (roadmap M2). `--check` / `--check-mirror` power the `seed-data` CI job; tests live in `tests/`. |
 
 ## Run order
 
@@ -69,3 +70,34 @@ rows exist, carry a null `day_of_week`, and include both brunch and dinner.
 Access (migration 001): role `aggrey_readonly` exists, has SELECT and no write privilege on all
 four tables (including column-level INSERT/UPDATE), and each table has its
 `aggrey_readonly_select` policy scoped to that role only.
+
+## Regenerating the seed (M2)
+
+`db/seed.sql` is generated from the workbook by `generate_seed.py` — never hand-edit it.
+
+```sh
+python3 db/generate_seed.py                 # rewrite db/seed.sql from the workbook (needs openpyxl)
+python3 db/generate_seed.py --check         # CI: fail if seed.sql is out of date with the workbook
+python3 db/generate_seed.py --check-mirror  # CI: fail if data/Aggrey_MVP_Data.md drifted from the workbook
+```
+
+The generator validates the workbook first (enums, day/meal rules, blank fields, time/date
+order, holiday-range overlaps, duplicates, and row counts for the pinned `dataset_version`) and
+refuses to write if anything is wrong. It is pinned to one dataset version: to change the data on
+purpose, edit the workbook **and** bump `DATASET_VERSION` and `EXPECTED_COUNTS` in
+`generate_seed.py` in the same reviewed change.
+
+**Known limitation (schema section 20):** re-running the seed is a partial, additive import,
+not a full sync:
+
+- New rows are inserted. **menus** use `ON CONFLICT DO NOTHING`, so an existing menu row is
+  never changed — even a corrected `display_order` is ignored.
+- **hours**, **holidays**, and **metadata** `DO UPDATE` only when the conflict key is unchanged
+  (`(schedule_type, meal_type)`, `(name, start_date, end_date)`, and `key`). A row whose key
+  changed is treated as brand new.
+- So renaming or deleting a food, or changing a holiday's name or dates, is **not** applied:
+  the old row stays, and a changed holiday range inserts a second row that can abort the whole
+  seed on the `holidays_no_overlap` constraint.
+
+Before the first real menu change (M11), add an approved full-sync approach (for example,
+truncate-and-reload in one transaction keyed by `dataset_version`).
