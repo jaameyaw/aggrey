@@ -17,6 +17,20 @@ jobs:
     name: Backend (lint, typecheck, test)
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    services:
+      # Disposable database for the integration tests (tests/integration/conftest.py).
+      # The password is a throwaway for this container only, not a secret.
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     defaults:
       run:
         working-directory: backend
@@ -41,6 +55,8 @@ jobs:
 
       - name: Test
         run: uv run pytest
+        env:
+          TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
 
   frontend:
     name: Frontend (lint, typecheck, format)

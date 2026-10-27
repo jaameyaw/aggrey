@@ -77,3 +77,17 @@ Run from `backend/`:
 | Every pre-commit check on all files | `uv run pre-commit run --all-files` |
 
 CI runs the same checks on every pull request and on `main`.
+
+### Backend integration tests
+
+The tests in `backend/tests/integration/` load `db/schema.sql`, `db/seed.sql`, and migration 001 into a throwaway database and query it as the read-only role. Without `TEST_DATABASE_URL` they are skipped. CI runs them against a `postgres:16` service container.
+
+To run them locally with Docker:
+
+```bash
+docker run -d --name aggrey-test-pg -e POSTGRES_PASSWORD=<any-password> -p 127.0.0.1:5439:5432 postgres:16
+cd backend
+TEST_DATABASE_URL=postgresql://postgres:<any-password>@127.0.0.1:5439/postgres uv run pytest
+```
+
+Point `TEST_DATABASE_URL` only at a disposable server you are a superuser on, never at Supabase. Each run creates and drops its own database and sets a random password on the cluster-wide `aggrey_readonly` role.
