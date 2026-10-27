@@ -1,7 +1,9 @@
 """The dining data repository interface.
 
 Plain lookups only. Choosing which schedule or menu applies to a date is domain
-logic (roadmap M4/M5) and does not belong here.
+logic (roadmap M4/M5) and does not belong here. Food matching is whole-word and
+lives in `aggrey/domain/food_match.py`; substring search in SQL would break it
+(spec section 9).
 """
 
 from datetime import date
@@ -42,16 +44,6 @@ class DiningRepository(Protocol):
         `weekday` is the ISO weekday for the weekly scope and None for holiday_sample.
         `station` matches case-insensitively when given.
         """
-        ...
-
-    async def search_food(
-        self,
-        term: str,
-        scope: MenuScope,
-        weekday: int | None,
-        meal: MealType | None = None,
-    ) -> list[MenuItem]:
-        """Menu rows whose food item contains `term`, case-insensitively."""
         ...
 
     async def get_metadata(self, key: str) -> str | None:

@@ -66,21 +66,6 @@ def test_holiday_sample_menu_uses_no_weekday() -> None:
     assert [i.food_item for i in items] == ["Pancakes"]
 
 
-def test_food_search_is_substring_and_scoped_to_the_day() -> None:
-    items = run(REPOSITORY.search_food("WING", MenuScope.WEEKLY, 1))
-
-    assert [(i.meal_type, i.food_item) for i in items] == [
-        (MealType.LUNCH, "Wings"),
-        (MealType.DINNER, "Chicken Wings"),
-    ]
-
-
-def test_food_search_can_filter_by_meal() -> None:
-    items = run(REPOSITORY.search_food("wing", MenuScope.WEEKLY, 1, MealType.DINNER))
-
-    assert [i.food_item for i in items] == ["Chicken Wings"]
-
-
 def test_hours_lookup() -> None:
     window = run(REPOSITORY.get_hours(ScheduleType.WEEKDAY, MealType.LUNCH))
 

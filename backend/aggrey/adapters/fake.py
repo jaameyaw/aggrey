@@ -55,27 +55,5 @@ class FakeRepository:
         ]
         return sorted(matches, key=lambda item: (item.station, item.display_order))
 
-    async def search_food(
-        self,
-        term: str,
-        scope: MenuScope,
-        weekday: int | None,
-        meal: MealType | None = None,
-    ) -> list[MenuItem]:
-        needle = term.strip().lower()
-        meal_order = list(MealType)
-        matches = [
-            item
-            for item in self.menus
-            if item.menu_scope == scope
-            and item.day_of_week == weekday
-            and (meal is None or item.meal_type == meal)
-            and needle in item.food_item.lower()
-        ]
-        return sorted(
-            matches,
-            key=lambda item: (meal_order.index(item.meal_type), item.station, item.display_order),
-        )
-
     async def get_metadata(self, key: str) -> str | None:
         return self.metadata.get(key)
