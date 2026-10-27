@@ -87,8 +87,17 @@ refuses to write if anything is wrong. It is pinned to one dataset version: to c
 purpose, edit the workbook **and** bump `DATASET_VERSION` and `EXPECTED_COUNTS` in
 `generate_seed.py` in the same reviewed change.
 
-**Known limitation (schema section 20):** the seed uses `ON CONFLICT DO NOTHING` (menus) and
-`DO UPDATE` (hours/holidays/metadata), so re-running **adds and updates** rows but does **not
-remove** foods deleted or renamed in the workbook. This is an initial import, not a full sync.
+**Known limitation (schema section 20):** re-running the seed is a partial, additive import,
+not a full sync:
+
+- New rows are inserted. **menus** use `ON CONFLICT DO NOTHING`, so an existing menu row is
+  never changed — even a corrected `display_order` is ignored.
+- **hours**, **holidays**, and **metadata** `DO UPDATE` only when the conflict key is unchanged
+  (`(schedule_type, meal_type)`, `(name, start_date, end_date)`, and `key`). A row whose key
+  changed is treated as brand new.
+- So renaming or deleting a food, or changing a holiday's name or dates, is **not** applied:
+  the old row stays, and a changed holiday range inserts a second row that can abort the whole
+  seed on the `holidays_no_overlap` constraint.
+
 Before the first real menu change (M11), add an approved full-sync approach (for example,
 truncate-and-reload in one transaction keyed by `dataset_version`).

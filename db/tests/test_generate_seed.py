@@ -4,6 +4,8 @@ These use tiny in-memory datasets (the "small broken sample workbooks" of roadma
 M2 step 7) and do not need openpyxl or the real workbook.
 """
 
+import datetime as dt
+
 import generate_seed as g
 
 # --- builders for minimal valid rows ---------------------------------------
@@ -186,6 +188,49 @@ def test_render_structure():
 
 
 # --- markdown mirror parsing -------------------------------------------------
+
+
+def test_minutes_strict():
+    assert g._minutes("07:30") == 450
+    assert g._minutes("17:00:00") == 1020
+    assert g._minutes("25:99") is None       # out of range
+    assert g._minutes("17:00:junk") is None  # junk after seconds
+    assert g._minutes("0930") is None        # no colon
+    assert g._minutes(dt.time(7, 30)) is None  # native Excel time cell rejected
+
+
+def test_date_strict():
+    assert g._date("2026-09-07") == dt.date(2026, 9, 7)
+    assert g._date("2026-09-07x") is None    # trailing garbage rejected (no [:10])
+    assert g._date("2026-13-01") is None     # impossible month
+    assert g._date(dt.date(2026, 9, 7)) is None  # native Excel date cell rejected
+
+
+def test_display_order_rejects_bool():
+    m, h, hol, md, c = valid_sets()
+    m[0]["display_order"] = True  # bool is an int subclass; must still be rejected
+    assert any("positive integer" in e for e in run(m, h, hol, md, c))
+
+
+def test_native_time_cell_rejected_in_hours():
+    m, h, hol, md, c = valid_sets()
+    h[0]["start_time"] = dt.time(7, 30)
+    assert any("HH:MM" in e for e in run(m, h, hol, md, c))
+
+
+def test_dataset_version_trailing_space_ok():
+    m, h, hol, md, c = valid_sets()
+    md[0]["value"] = g.DATASET_VERSION + "   "
+    assert run(m, h, hol, md, c) == []
+
+
+def test_blank_metadata_key_has_no_duplicate_noise():
+    m, h, hol, md, c = valid_sets()
+    md.append(meta(key="   ", value="x"))
+    c["metadata"] = 2
+    errs = run(m, h, hol, md, c)
+    assert any("key is blank" in e for e in errs)
+    assert not any("duplicate key" in e for e in errs)
 
 
 def test_parse_mirror_reads_only_known_tables():

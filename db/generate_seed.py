@@ -6,14 +6,16 @@ script turns it into db/seed.sql deterministically: the same workbook always
 produces byte-identical SQL. That makes future menu changes a reviewable diff
 instead of a hand-edit.
 
+The workbook is validated before anything is written (see validate()); the generator
+refuses to produce a seed from invalid data.
+
 Usage (needs openpyxl):
   python3 db/generate_seed.py            # write db/seed.sql from the workbook
-  python3 db/generate_seed.py --check    # fail (exit 1) if the workbook would
-                                         # produce something different from the
-                                         # committed db/seed.sql -- for CI
-
-Validation of the workbook's contents is added in a later step; this step
-focuses on faithfully reproducing the committed seed.
+  python3 db/generate_seed.py --check    # fail (exit 1) if the committed db/seed.sql
+                                         # differs from the workbook -- for CI
+  python3 db/generate_seed.py --check-mirror
+                                         # fail (exit 1) if data/Aggrey_MVP_Data.md
+                                         # differs from the workbook -- for CI
 """
 
 from __future__ import annotations
@@ -22,7 +24,7 @@ import argparse
 import difflib
 import sys
 from collections import Counter
-from datetime import date, datetime
+from datetime import date
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -185,18 +187,34 @@ def _blank(value: object) -> bool:
 
 
 def _minutes(value: object) -> int | None:
-    """Parse an 'HH:MM' time to minutes since midnight, or None if malformed."""
-    text = str(value).strip()
-    parts = text.split(":")
-    if len(parts) < 2 or not parts[0].isdigit() or not parts[1].isdigit():
+    """Parse 'HH:MM' or 'HH:MM:SS' text to minutes, or None if malformed.
+
+    Requires a text cell with valid ranges (0<=h<24, 0<=m<60, 0<=s<60). Native
+    Excel time cells (datetime.time) and junk like '25:99' or '17:00:x' return None,
+    so the seed never silently renders '07:30' as '07:30:00'.
+    """
+    if not isinstance(value, str):
         return None
-    return int(parts[0]) * 60 + int(parts[1])
+    parts = value.strip().split(":")
+    if len(parts) not in (2, 3) or not all(p.isdigit() for p in parts):
+        return None
+    h, m, *rest = (int(p) for p in parts)
+    s = rest[0] if rest else 0
+    if not (0 <= h < 24 and 0 <= m < 60 and 0 <= s < 60):
+        return None
+    return h * 60 + m
 
 
 def _date(value: object) -> date | None:
-    """Parse a 'YYYY-MM-DD' date, or None if malformed."""
+    """Parse a whole 'YYYY-MM-DD' text value, or None if malformed.
+
+    Parses the entire stripped string (no truncation), so '2026-09-07x' is rejected,
+    and requires text so native Excel date cells (datetime) are rejected too.
+    """
+    if not isinstance(value, str):
+        return None
     try:
-        return datetime.strptime(str(value).strip()[:10], "%Y-%m-%d").date()
+        return date.fromisoformat(value.strip())
     except ValueError:
         return None
 
@@ -233,7 +251,8 @@ def validate(
             errors.append(f"menus row {i}: station is blank")
         if _blank(r["food_item"]):
             errors.append(f"menus row {i}: food_item is blank")
-        if not isinstance(r["display_order"], int) or int(r["display_order"]) <= 0:
+        order = r["display_order"]
+        if not isinstance(order, int) or isinstance(order, bool) or order <= 0:
             errors.append(f"menus row {i}: display_order must be a positive integer, got {r['display_order']!r}")
 
         if scope == "holiday_sample":
@@ -242,7 +261,7 @@ def validate(
             if meal not in {"brunch", "dinner"}:
                 errors.append(f"menus row {i}: holiday_sample meal_type must be brunch or dinner")
         elif scope == "weekly":
-            if not isinstance(dow, int) or dow < 1 or dow > 7:
+            if not isinstance(dow, int) or isinstance(dow, bool) or dow < 1 or dow > 7:
                 errors.append(f"menus row {i}: weekly day_of_week must be 1-7, got {dow!r}")
             elif dow <= 5 and meal not in {"breakfast", "lunch", "dinner"}:
                 errors.append(f"menus row {i}: weekday {dow} meal_type must be breakfast/lunch/dinner")
@@ -310,16 +329,20 @@ def validate(
     # --- metadata ---
     seen_keys: dict[str, int] = {}
     for i, r in enumerate(metadata, start=1):
-        if _blank(r["key"]):
-            errors.append(f"metadata row {i}: key is blank")
         if _blank(r["value"]):
             errors.append(f"metadata row {i}: value is blank")
+        if _blank(r["key"]):
+            errors.append(f"metadata row {i}: key is blank")
+            continue  # don't also report a confusing duplicate 'None' key
         k = str(r["key"]).strip()
         if k in seen_keys:
             errors.append(f"metadata row {i}: duplicate key '{k}' (also row {seen_keys[k]})")
         else:
             seen_keys[k] = i
-    version = next((str(r["value"]) for r in metadata if str(r["key"]).strip() == "dataset_version"), None)
+    version = next(
+        (str(r["value"]).strip() for r in metadata if str(r["key"]).strip() == "dataset_version"),
+        None,
+    )
     if version != DATASET_VERSION:
         errors.append(f"metadata: dataset_version is {version!r}; this generator expects {DATASET_VERSION!r}")
 
@@ -384,10 +407,11 @@ def check_mirror(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Generate db/seed.sql from the workbook.")
-    parser.add_argument("--check", action="store_true",
-                        help="exit non-zero if the committed seed.sql would change")
-    parser.add_argument("--check-mirror", action="store_true",
-                        help="exit non-zero if data/Aggrey_MVP_Data.md differs from the workbook")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--check", action="store_true",
+                      help="exit non-zero if the committed seed.sql would change")
+    mode.add_argument("--check-mirror", action="store_true",
+                      help="exit non-zero if data/Aggrey_MVP_Data.md differs from the workbook")
     args = parser.parse_args()
 
     if not WORKBOOK.exists():
