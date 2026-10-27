@@ -99,7 +99,7 @@ Rules:
 | today | Today | **Decided** (N-13) |
 | tonight | Today. If no meal is named, the meal is dinner. | Phrase **Decided** (N-13); "dinner" default **Decided (N-40)** |
 | tomorrow, tmrw, tmr, tomorow | Today plus one day | Phrase **Decided** (N-13); spelling variants **Decided (N-40)** |
-| Weekday names (monday, mon, tuesday, tues, ...) | The next upcoming day with that name: today if today has that name, otherwise the next one. Never a past date. | **Decided** (N-13); abbreviations **Decided (N-40)** |
+| Weekday names: monday, mon, tuesday, tue, tues, wednesday, wed, weds, thursday, thu, thur, thurs, friday, fri, saturday, sat, sunday, sun. No plural forms ("mondays"). | The next upcoming day with that name: today if today has that name, otherwise the next one. Never a past date. | **Decided** (N-13); abbreviations **Decided (N-40)**; full word list **Decided** (owner, 2026-10-27) |
 | Explicit dates (11/25, nov 25, november 25th) | Not supported in the first version | **Decided** (N-13) |
 
 **Recognized but unsupported.** If the message contains any of the following, Aggrey asks the student to rephrase and lists the supported date words. It never answers for a different date. **Decided (N-40).**
@@ -110,6 +110,8 @@ Rules:
 - "next week," "this week," "this weekend," "weekend"
 
 This matters because "What's for lunch on 11/25?" must not be answered with today's lunch.
+
+**Two different dates.** If the supported date phrases in one message point to different days ("lunch today or tomorrow?"), Aggrey treats the date as unrecognized and asks the student to name one day, exactly like an unsupported phrase. Phrases that land on the same day ("today tonight", or "tuesday tomorrow" sent on a Monday) are not a conflict. **Decided** (owner, 2026-10-27).
 
 ### 3.3 Station aliases
 
@@ -594,6 +596,8 @@ Expected readings for the test suite. When the conversation tests are added, thi
 | 51 | What's for dinner 11-25? | menu | dinner | unsupported | | | Ask to rephrase (3.2) |
 | 52 | What's at the turntable? | menu | dinner | today | Dinner / turntable | | Meal chosen from the station (7.1) |
 | 53 | When does the caf close? *(Mon 15:30)* | open_now | | today | | | "Nothing is being served right now. Dinner is served 5:00 to 8:00 PM." (7.3) |
+| 54 | lunch today or tomorrow? | menu | lunch | unsupported | | | Two different dates; ask to rephrase (3.2) |
+| 55 | dinner thurs | menu | dinner | next Thursday (today if Thursday) | | | Weekday abbreviation (3.2) |
 
 ---
 
@@ -642,3 +646,5 @@ The draft was checked against the acceptance matrix (roadmap Section 6) and `db/
 | 9 | 12 | Corpus path referred to a `backend/` that did not exist yet | Path updated to `backend/tests/conversation/phrases.yaml` |
 
 Section 9.4 decisions: "burger"/"hamburger" match the patties and Veggie Burger, not the bun; "fries" no longer matches Stir Fry; egg noodle and green beans hits stay; no wings synonym. Corpus rows 44–53 cover the fixes.
+
+**Amendment, October 27, 2026** (project owner, during M4): section 3.2 now lists every accepted weekday word (the approved row ended in "..."), and a message whose date phrases point to different days is treated as an unrecognized date. Corpus rows 54–55 cover both.
