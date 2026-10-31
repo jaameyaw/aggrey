@@ -371,7 +371,7 @@ The `hours` table stores serving windows, not building hours (schema doc section
 | 3. Named meal not served | Say that meal isn't served that day, then search the meals that are | **Decided (N-40)** |
 | 4. Match | Section 9 | **Decided** that rules live here (N-17); rules themselves **Decided (N-40)** |
 | 5. Found | List every match as meal, station, and item, grouped by meal then station | **Decided** (PRD FR-8) |
-| 6. Found, but that meal is over today | Report the match and say the meal is over for today | **Open (N-44)**, suggested |
+| 6. Found, but that meal is over today | Report the match and say the meal is over for today, for example "Onion Rings were at lunch (Grill / sandwich), but lunch is over for today." Only applies when the date is today. | **Decided (N-44)** |
 | 7. Not found | If the keyword is exactly a station alias (3.3) and that station is on a searched meal's menu, give that station's menu. Example: no item name contains "sandwich," so "Do they have sandwiches?" gives the Grill / sandwich menu. Otherwise: "I don't see \<keyword\> on the menu for \<day\>." Never "not served" and never "they don't have it." | Wording **Decided** (schema doc section 13); station fallback **Decided (N-40)** |
 
 Example (Monday): "Do they have onion rings?" gives Onion Rings at lunch, Grill / sandwich. "Do they have wings today?" gives: I don't see wings on today's menu.
@@ -523,9 +523,8 @@ Items this spec waits on. Each is in roadmap Section 1.
 | N-18 | Reply wording, emojis, station order | 10 |
 | N-20 | How long a pending question lasts | 8 |
 | N-22 | First message from a new number | 7.6 |
-| N-44 | Food lookup for a finished meal | 7.4 |
 
-N-40 (sign-off) was answered on 2026-10-24 and N-41 (menu question with no meal) N-42 (no station question), and N-43 (override hours treated as confirmed) on 2026-10-30; see section 14.
+N-40 (sign-off) was answered on 2026-10-24 and N-41 (menu question with no meal) N-42 (no station question), N-43 (override hours treated as confirmed), and N-44 (food lookup for a finished meal) on 2026-10-30; see section 14.
 
 ---
 
@@ -595,6 +594,7 @@ Expected readings for the test suite. When the conversation tests are added, thi
 | 58 | What's on the menu tomorrow? *(Sun)* | menu | ask | tomorrow | | | Asks breakfast, lunch, or dinner (7.1, N-41) |
 | 59 | What's on the menu tomorrow? *(Fri)* | menu | ask | tomorrow | | | Asks brunch or dinner (7.1, N-41) |
 | 60 | dinner *(after meal question)* | follow_up | dinner | saved | | | Section 7.5 |
+| 61 | Do they have onion rings today? *(Mon 15:30)* | food_lookup | | today | | onion ring | Found at lunch, which is over (7.4 step 6, N-44) |
 
 ---
 
@@ -613,7 +613,7 @@ Every row in `roadmap.md` Section 6 maps to a rule here.
 | 11 | 6.6 holiday dinner |
 | 12 | 6.5 override hours treated as confirmed (N-43) |
 | 16 | 6.7 Lite Lunch menu |
-| 17, 18, 19 | 7.4, 9 food matching |
+| 17, 18, 19, 41 | 7.4, 9 food matching; 41 is 7.4 step 6 (N-44) |
 | 20, 21 | 6.4 states, 7.3 open now |
 | 24, 25 | 7.7 unclear, 3.2 unsupported dates |
 | 26 | 6.7 database unreachable |
@@ -652,3 +652,5 @@ Section 9.4 decisions: "burger"/"hamburger" match the patties and Veggie Burger,
 **Amendment, October 30, 2026** (project owner, N-42): many students don't know the cafeteria has stations, so weekday lunch and weekend brunch no longer ask which station. They show every station grouped by station, after a one-line station intro built from the data. A station named directly still returns only that station. The pending station question and its follow-ups are withdrawn. Sections 4, 5, 7.1, 7.5, and 8 updated; corpus rows 32–34 changed.
 
 **Amendment, October 30, 2026** (project owner, N-43): for the pilot and testing, all override hours are treated as confirmed, including `pending_confirmation`, and replies carry no "not yet confirmed" label. Holiday sample menus are still labeled as sample menus. To revisit when the real virtual-period hours arrive (N-25). Sections 6.5, 7.2, and 10 updated.
+
+**Amendment, October 30, 2026** (project owner, N-44): a food lookup that matches a meal already over today reports the match and says that meal is over for today. Section 7.4 step 6 updated; corpus row 61 covers it.
