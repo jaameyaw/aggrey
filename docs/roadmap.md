@@ -1,8 +1,8 @@
 # Aggrey MVP Roadmap and Next Steps
 
-**Status:** M0 (repository foundation) done on 2026-10-24, except the GitHub settings in step 8 (step 1 done later the same day; see N-31). M1 (database schema on Supabase) done on 2026-10-25. M2 (data import from the workbook) done on 2026-10-27. M3 (backend skeleton) done on 2026-10-24. M4 (date and schedule rules) done on 2026-10-27. No menu services, conversation logic, or deployments exist yet. `db/schema.sql` and `db/seed.sql` were added on 2026-10-24.
+**Status:** M0 (repository foundation) done on 2026-10-24, except the GitHub settings in step 8 (step 1 done later the same day; see N-31). M1 (database schema on Supabase) done on 2026-10-25. M2 (data import from the workbook) done on 2026-10-27. M3 (backend skeleton) done on 2026-10-24. M4 (date and schedule rules) done on 2026-10-27. M5 (dining data services) done on 2026-10-30. No conversation logic or deployments exist yet. `db/schema.sql` and `db/seed.sql` were added on 2026-10-24.
 **Created:** October 24, 2026
-**Last updated:** October 30, 2026 (N-41 answered: menu question with no meal). Earlier, October 27, 2026 (M4 done; N-13 follow-up on weekday words and conflicting dates). Earlier the same day, M1 and M2 marked done. Earlier, October 24, 2026 (answers to N-03, N-12, N-13, N-14, N-15, N-16, N-17, N-19; holiday dinner sample added as dataset `mvp_v1_3`; new module MS and its draft spec; new questions N-40 to N-44; Intent and Logic Spec approved, N-40)
+**Last updated:** October 30, 2026 (M5 done; N-41 answered: menu question with no meal). Earlier, October 27, 2026 (M4 done; N-13 follow-up on weekday words and conflicting dates). Earlier the same day, M1 and M2 marked done. Earlier, October 24, 2026 (answers to N-03, N-12, N-13, N-14, N-15, N-16, N-17, N-19; holiday dinner sample added as dataset `mvp_v1_3`; new module MS and its draft spec; new questions N-40 to N-44; Intent and Logic Spec approved, N-40)
 **Applies to:** the MVP defined in `Aggrey_MVP_PRD.md`, `Aggrey_Technical_Architecture.md`, and `Aggrey_MVP_Database_Schema.md`.
 
 This roadmap breaks the MVP into modules. Each module lists its goal, dependencies, the inputs required from the project owner, step-by-step work, deliverables, and a definition of done. It adds no product features beyond the PRD.
@@ -423,6 +423,8 @@ A `db/seed.sql` already exists (added 2026-10-24). It says it was generated from
 ---
 
 ### M5. Dining data services
+
+**Status:** done 2026-10-30 (PR #15). `services/menu.py`, `services/hours.py`, and `services/food_search.py` return typed results that carry the `DaySchedule`, so M6 can disclose overrides. `domain/text.py` (spec section 2 normalization, shared with M6) and `domain/food_match.py` (spec section 9 matching and the 9.3 synonym list only, N-17) were added with them. Unit tests use a recording fake; integration tests in `backend/tests/integration/test_services.py` cover the Section 6 data rows and the spec 9.2 table against the seeded database, and CI runs them against a Postgres service. Holiday and break dinner uses the `holiday_sample` rows until a real menu arrives (N-26).
 
 **Goal:** turn a resolved date, schedule, meal, and optional station or food keyword into structured facts from the database, with missing-data rules applied.
 **Depends on:** M2, M4.
