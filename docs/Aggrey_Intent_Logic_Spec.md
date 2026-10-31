@@ -276,7 +276,7 @@ The finished-meal rule only applies when the date is today. "What's for lunch to
 
 - **Decided** (PRD 3): provisional hours and menus must never be presented as confirmed.
 - The holiday brunch and dinner menus (`menu_scope = 'holiday_sample'`) are always labeled as sample menus. **Decided** (PRD 3, N-16).
-- **Open (N-43):** which `verification_status` values make an override provisional. Suggested: only `pending_confirmation` (currently the Virtual Classes, Reading Day & Exams period, 2026-11-30 to 2026-12-12). Hours on those dates are labeled "not yet confirmed."
+- **Decided (N-43, 2026-10-30):** for the pilot and testing, every override's hours are treated as confirmed, whatever its `verification_status`, including `pending_confirmation` (the Virtual Classes, Reading Day & Exams period, 2026-11-30 to 2026-12-12). Replies give those hours without a "not yet confirmed" label. This will be revisited when the real hours arrive (N-25). The sample-menu label above is not affected.
 
 ### 6.6 Holiday and break menus
 
@@ -333,7 +333,7 @@ The finished-meal rule only applies when the date is today. "What's for lunch to
 
 | Case | Reply meaning | Status |
 | --- | --- | --- |
-| Meal named and served that day | "\<Meal\> \<day\>: \<start\> to \<end\>." Add the provisional label if 6.5 applies. | **Decided** (PRD FR-7) |
+| Meal named and served that day | "\<Meal\> \<day\>: \<start\> to \<end\>." No provisional label on hours (6.5, N-43). | **Decided** (PRD FR-7) |
 | Meal named, today, already over | Same, plus "(over for today)" | **Decided (N-40)** |
 | Lite Lunch on a weekday | Its hours, plus the Lite Lunch note (6.4) | **Decided** (PRD, acceptance row 15; note from owner) |
 | Meal named but not served that day | Not served that day, then the day's meals with their times | **Decided (N-40)** |
@@ -503,7 +503,7 @@ Checked against all 223 menu rows of `mvp_v1_2` on 2026-10-24. The four holiday 
 | --- | --- |
 | Always name the day being described, for example "Today (Mon)" or "Tomorrow (Tue)." On an override date, also name it ("Thanksgiving Holiday, break schedule"). | **Decided** (roadmap M6 step 5) |
 | 12-hour times ("5:00 PM"). | **Decided** unless N-18 changes it |
-| Provisional data is labeled in plain words ("sample menu," "not yet confirmed"). | **Decided** (PRD 3) |
+| Sample menus are labeled in plain words ("sample menu"). Hours carry no "not yet confirmed" label (N-43). | **Decided** (PRD 3, N-43) |
 | Missing food is "not on the menu I have," never "not served." | **Decided** (schema doc section 13) |
 | Multi-station replies are grouped by station. If a reply is longer than Sendblue's limit (roadmap M7 step 1), split it between stations, never inside a station. | **Decided** (N-19) |
 | Station order: the data has no station-order column, so stations are listed alphabetically, as the schema doc's queries do. This puts "Grill / sandwich" before "Main hot-food." A different order would need a schema change. | **Decided (N-40)** as the default; N-18 may still change it |
@@ -523,10 +523,9 @@ Items this spec waits on. Each is in roadmap Section 1.
 | N-18 | Reply wording, emojis, station order | 10 |
 | N-20 | How long a pending question lasts | 8 |
 | N-22 | First message from a new number | 7.6 |
-| N-43 | Which data counts as provisional | 6.5 |
 | N-44 | Food lookup for a finished meal | 7.4 |
 
-N-40 (sign-off) was answered on 2026-10-24 and N-41 (menu question with no meal) and N-42 (no station question) on 2026-10-30; see section 14.
+N-40 (sign-off) was answered on 2026-10-24 and N-41 (menu question with no meal) N-42 (no station question), and N-43 (override hours treated as confirmed) on 2026-10-30; see section 14.
 
 ---
 
@@ -612,7 +611,7 @@ Every row in `roadmap.md` Section 6 maps to a rule here.
 | 9, 13, 15 | 7.2 hours |
 | 10, 23, 34 | 6.2 schedule, 6.3, 6.6 holiday brunch |
 | 11 | 6.6 holiday dinner |
-| 12 | 6.5 provisional (N-43) |
+| 12 | 6.5 override hours treated as confirmed (N-43) |
 | 16 | 6.7 Lite Lunch menu |
 | 17, 18, 19 | 7.4, 9 food matching |
 | 20, 21 | 6.4 states, 7.3 open now |
@@ -651,3 +650,5 @@ Section 9.4 decisions: "burger"/"hamburger" match the patties and Veggie Burger,
 **Amendment, October 30, 2026** (project owner, N-41): a menu question with no meal uses the time of day when the date is today (the next meal, skipping Lite Lunch to dinner, or "the cafeteria's closed for the rest of today" when no meals are left), and asks which meal for any other date, listing only that day's meals that have a menu. Sections 7.1, 7.5, and 8 updated. Corpus rows 17 and 56–60 cover it.
 
 **Amendment, October 30, 2026** (project owner, N-42): many students don't know the cafeteria has stations, so weekday lunch and weekend brunch no longer ask which station. They show every station grouped by station, after a one-line station intro built from the data. A station named directly still returns only that station. The pending station question and its follow-ups are withdrawn. Sections 4, 5, 7.1, 7.5, and 8 updated; corpus rows 32–34 changed.
+
+**Amendment, October 30, 2026** (project owner, N-43): for the pilot and testing, all override hours are treated as confirmed, including `pending_confirmation`, and replies carry no "not yet confirmed" label. Holiday sample menus are still labeled as sample menus. To revisit when the real virtual-period hours arrive (N-25). Sections 6.5, 7.2, and 10 updated.

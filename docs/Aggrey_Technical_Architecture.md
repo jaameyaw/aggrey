@@ -103,7 +103,7 @@ requested date -> matching holidays record?
 | Holiday | Brunch, Dinner | 10:30 AM–1:30 PM; 5–8 PM |
 | Break | Brunch, Dinner | 10–11 AM; 4–6 PM |
 
-Fall Break, Thanksgiving, and Christmas are stored as **break** overrides. The virtual-classes/exams period also uses the break template but is **provisional**. Do not present those hours as confirmed. Summer operations have no dated override in the current dataset.
+Fall Break, Thanksgiving, and Christmas are stored as **break** overrides. The virtual-classes/exams period also uses the break template. Its hours are not yet confirmed by the school, but for the pilot and testing they are treated as confirmed and shown without a label (roadmap N-43, to revisit under N-25). Summer operations have no dated override in the current dataset.
 
 ### Menu selection
 
@@ -163,9 +163,9 @@ Example environment variable names (application configuration, not provider API 
 Automated tests should cover the following before the student pilot:
 
 - Monday breakfast returns **all nine items**, and Monday Pizza returns **all four** items.
-- All five weekday lunch stations are retrievable; general lunch → station → follow-up works.
+- All five weekday lunch stations are retrievable; a generic lunch question shows every station grouped, and a direct station question returns that station (N-42).
 - Weekends use weekend brunch/dinner; Fall Break, Thanksgiving, and Christmas use the dated **break** override.
-- Virtual-period responses disclose that the hours are provisional.
+- Virtual-period responses give the stored hours without a provisional label (N-43).
 - Food search checks applicable meals/stations and does not claim unlisted items are definitely unavailable.
 - Lite Lunch hours work while Lite Lunch food-menu queries return a missing-data response.
 - Duplicate inbound events, malformed webhooks, database failures, and Sendblue failures are handled safely.

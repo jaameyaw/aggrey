@@ -1,8 +1,8 @@
 """Serving hours lookup (spec 7.2; schema doc section 11).
 
-These are meal serving windows, not building hours (schema doc section 20). Whether
-an override's hours are provisional is open (N-43); `schedule.override` carries
-its verification status for M6.
+These are meal serving windows, not building hours (schema doc section 20). Override
+hours are treated as confirmed whatever their verification status (N-43);
+`schedule.override` carries the override so M6 can name it.
 """
 
 from dataclasses import dataclass

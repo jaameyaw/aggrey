@@ -2,7 +2,7 @@
 
 **Status:** M0 (repository foundation) done on 2026-10-24, except the GitHub settings in step 8 (step 1 done later the same day; see N-31). M1 (database schema on Supabase) done on 2026-10-25. M2 (data import from the workbook) done on 2026-10-27. M3 (backend skeleton) done on 2026-10-24. M4 (date and schedule rules) done on 2026-10-27. M5 (dining data services) done on 2026-10-30. No conversation logic or deployments exist yet. `db/schema.sql` and `db/seed.sql` were added on 2026-10-24.
 **Created:** October 24, 2026
-**Last updated:** October 30, 2026 (M5 done; N-41 answered: menu question with no meal; N-42 answered: no station question for lunch or brunch). Earlier, October 27, 2026 (M4 done; N-13 follow-up on weekday words and conflicting dates). Earlier the same day, M1 and M2 marked done. Earlier, October 24, 2026 (answers to N-03, N-12, N-13, N-14, N-15, N-16, N-17, N-19; holiday dinner sample added as dataset `mvp_v1_3`; new module MS and its draft spec; new questions N-40 to N-44; Intent and Logic Spec approved, N-40)
+**Last updated:** October 30, 2026 (M5 done; N-41 answered: menu question with no meal; N-42 answered: no station question for lunch or brunch; N-43 answered: override hours treated as confirmed). Earlier, October 27, 2026 (M4 done; N-13 follow-up on weekday words and conflicting dates). Earlier the same day, M1 and M2 marked done. Earlier, October 24, 2026 (answers to N-03, N-12, N-13, N-14, N-15, N-16, N-17, N-19; holiday dinner sample added as dataset `mvp_v1_3`; new module MS and its draft spec; new questions N-40 to N-44; Intent and Logic Spec approved, N-40)
 **Applies to:** the MVP defined in `Aggrey_MVP_PRD.md`, `Aggrey_Technical_Architecture.md`, and `Aggrey_MVP_Database_Schema.md`.
 
 This roadmap breaks the MVP into modules. Each module lists its goal, dependencies, the inputs required from the project owner, step-by-step work, deliverables, and a definition of done. It adds no product features beyond the PRD.
@@ -68,7 +68,7 @@ Where an option is labeled "suggested," it is a proposal for you to accept or re
 | N-40 | **Intent and Logic Specification sign-off.** Review and approve `Aggrey_Intent_Logic_Spec.md` (drafted 2026-10-24 in module MS): the intent list, the slots each intent needs, defaults, the behavior and reply for each case, food matching and synonyms, and the phrase corpus. Nothing in M4–M6 is "supported" until it is in the approved spec. **Answer (2026-10-24):** approved by the project owner after nine review fixes, which are listed in spec section 14. All **Proposed** rules are now decided. Section 9.4 answers: "burger" and "hamburger" match the patties and Veggie Burger, not the bun; "fries" no longer matches Stir Fry; the egg noodle and green bean matches stay; there is no wings synonym. N-11, N-18, N-20, N-22, and N-41 to N-44 stay open. | MS, M4, M5, M6 |
 | N-41 | **Menu question with no meal.** "What's on the menu today?" names no meal. Suggested: ask which meal, listing only the meals served on that day's schedule. **Answer (2026-10-30):** use the time of day. For today, answer with the next meal (the one being served now, otherwise the next one later today). If that is Lite Lunch, say Lite Lunch is on with the usual note and show dinner instead. If no meals are left, reply naturally that the cafeteria is closed for the rest of today, with nothing about tomorrow. For any other date, check its schedule first, then ask which meal, listing only that day's meals with a menu ("breakfast, lunch, or dinner" on a weekday; "brunch or dinner" on a weekend, holiday, or break). Spec 7.1, 7.5, and 8 updated. | MS, M6 |
 | N-42 | **Brunch stations.** Weekend brunch has 3–4 stations and 18–22 items (Saturday has 22). The PRD asks for a station only at weekday lunch. Suggested: show all of brunch grouped by station, split per N-19, with no station prompt. **Answer (2026-10-30):** yes, and weekday lunch works the same way, because many students don't know the cafeteria has stations. A generic lunch or brunch question shows every station grouped by station, after a one-line intro that says how many stations there are (for example "Lunch has 5 stations today:"). A station named directly still returns only that station. The lunch station question and its "I don't know" and "everything" follow-ups are dropped. Spec 7.1, 7.5, and 8, PRD FR-12, and the architecture's lunch-station section updated. | MS, M6 |
-| N-43 | **Which data counts as provisional.** `holidays.verification_status` has four values: `calendar_date; mvp_hours`, `calendar_date; latest_hours`, `calendar_date; user_confirmed_hours`, and `pending_confirmation`. Suggested: only `pending_confirmation` is labeled "not yet confirmed" in replies. | MS, M4, M6 |
+| N-43 | **Which data counts as provisional.** `holidays.verification_status` has four values: `calendar_date; mvp_hours`, `calendar_date; latest_hours`, `calendar_date; user_confirmed_hours`, and `pending_confirmation`. Suggested: only `pending_confirmation` is labeled "not yet confirmed" in replies. **Answer (2026-10-30):** no labels. For the pilot and testing, use the stored hours for every override, including `pending_confirmation`, and treat them as confirmed. To revisit when the real hours arrive (N-25). Holiday sample menus are still labeled as sample menus. Spec 6.5, 7.2, and 10, the PRD, and the architecture updated. | MS, M4, M6 |
 | N-44 | **Food lookup for a finished meal.** At 3:30 PM, "Do they have onion rings today?" matches lunch, which is over. Suggested: report the match and say that lunch is over for today. | MS, M6 |
 
 ### 1D. Data confirmations (from the dining manager)
@@ -267,7 +267,7 @@ The database developer works on the `database/supabase` branch (N-39).
 **Goal:** one approved document that says exactly what Aggrey understands and how it answers. Aggrey is rule-based, so the rules must be written down before they are coded. Without this document, each developer would decide behavior in code, and the tests would have nothing to check against.
 **Depends on:** nothing (documents only). Start now, in parallel with M0–M3.
 **Status:** `docs/Aggrey_Intent_Logic_Spec.md` approved 2026-10-24 (N-40). The open items below are still pending.
-**Needs from you:** N-11, N-18, N-20, N-21, N-22, N-43, N-44. N-12, N-13, N-14, N-15, N-16, N-17, N-19, N-40, N-41, and N-42 are answered.
+**Needs from you:** N-11, N-18, N-20, N-21, N-22, N-44. N-12, N-13, N-14, N-15, N-16, N-17, N-19, N-40, N-41, N-42, and N-43 are answered.
 
 **Steps**
 
@@ -439,7 +439,7 @@ A `db/seed.sql` already exists (added 2026-10-24). It says it was generated from
    - Lite Lunch: always return "menu unavailable" with its hours.
    - Zero rows for a valid meal: return "menu unavailable." Never fall back to another day.
 2. **Station handling:** read the station list from the menu rows for that day and meal. Never hard-code five stations (schema section 18).
-3. **Hours service** (schema section 11): look up start and end times for a schedule and meal. Zero rows gives "hours unavailable." Carry provisional flags from M4.
+3. **Hours service** (schema section 11): look up start and end times for a schedule and meal. Zero rows gives "hours unavailable." Override hours are treated as confirmed (N-43); `schedule.override` still carries the override for naming it in replies.
 4. **Food search** (schema section 12): search only meals valid for the resolved schedule, using only the matching rules and synonym list in the approved Intent and Logic Specification (N-17, N-40). Return meal, station, and item for every match. No match means "not listed on the stored menu," never "not served."
 5. Return typed result objects (dataclasses or pydantic), not strings. Formatting happens in M6.
 6. Integration tests against the seeded database for every menu and hours row in Section 6.
@@ -471,7 +471,7 @@ A `db/seed.sql` already exists (added 2026-10-24). It says it was generated from
 4. **Context store:** keyed by sender, holding the pending date and awaiting-meal flag (N-41; there is no station question since N-42). Expires after the time set in N-20. In memory and bounded in size for the single-instance pilot (architecture section 7). Put it behind an interface so a durable store can replace it later.
 5. **Response formatter:** turn M5 results into the approved templates (N-18). Rules:
    - Always state the day being described ("Today (Wed)…", "Tomorrow…").
-   - Label anything provisional or unverified in plain words.
+   - Label sample menus in plain words. Override hours carry no provisional label (N-43).
    - Use 12-hour times unless N-18 says otherwise.
    - If the asked-about meal is already over today, say so and give the next meal and its serving time (N-14). Do not show the finished meal's menu.
    - Group multi-station replies by station. If a reply exceeds Sendblue's length limit, split it only between stations (N-19).
@@ -614,7 +614,7 @@ Expected results come from dataset `mvp_v1_3`. Dates are real 2026–2027 dates,
 | 9 | 2026-11-01 (Sun) | What time is brunch? | 10:30 AM to 1:30 PM. |
 | 10 | 2026-11-25 (Wed, Thanksgiving break) | What's for lunch? | No regular lunch; break schedule; brunch 10–11 AM, dinner 4–6 PM; holiday sample brunch menu labeled as such. |
 | 11 | 2026-11-25 (Wed) | What's for dinner? | Break hours 4–6 PM and the holiday sample dinner (Beef Stroganoff, Butter Egg Noodle, Steamed Broccoli, Oregano Roasted Carrots), labeled as a sample menu. Never the Wednesday weekly dinner (N-16). |
-| 12 | 2026-12-01 (Tue, virtual classes) | What time is dinner? | 4–6 PM, clearly marked as not yet confirmed. |
+| 12 | 2026-12-01 (Tue, virtual classes) | What time is dinner? | 4–6 PM, given as the hours with no "not yet confirmed" label (N-43). |
 | 13 | 2027-01-18 (Mon, MLK Day) | What time is brunch? | Holiday hours: 10:30 AM to 1:30 PM. |
 | 14 | 2026-09-07 (Mon, Labor Day) | What's for breakfast? | Breakfast not served; holiday brunch and dinner. |
 | 15 | Any weekday | What time is Lite Lunch? | 2:00 to 3:00 PM. |

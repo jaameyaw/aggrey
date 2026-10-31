@@ -22,8 +22,8 @@ class OverrideSource(Protocol):
 class DaySchedule:
     day: date
     schedule_type: ScheduleType
-    # The holiday or break row, kept so replies can name it and disclose its
-    # verification status. Which statuses count as provisional is open (N-43).
+    # The holiday or break row, kept so replies can name it. Its hours are
+    # treated as confirmed whatever the verification status (N-43).
     override: HolidayPeriod | None = None
 
 
