@@ -48,10 +48,6 @@ def create_pool(settings: Settings) -> Pool:
     )
 
 
-def _escape_like(term: str) -> str:
-    return term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
-
-
 def _menu_item(row: TupleRow) -> MenuItem:
     scope, day_of_week, meal, station, food_item, display_order = row
     return MenuItem(
@@ -134,25 +130,6 @@ class PostgresRepository:
             " AND (%s::text IS NULL OR lower(btrim(station)) = lower(btrim(%s::text)))"
             " ORDER BY station, display_order",
             (scope.value, weekday, meal.value, station, station),
-        )
-        return [_menu_item(row) for row in rows]
-
-    async def search_food(
-        self,
-        term: str,
-        scope: MenuScope,
-        weekday: int | None,
-        meal: MealType | None = None,
-    ) -> list[MenuItem]:
-        meal_value = meal.value if meal is not None else None
-        rows = await self._fetch(
-            "SELECT menu_scope, day_of_week, meal_type, station, food_item, display_order"
-            " FROM public.menus"
-            " WHERE menu_scope = %s AND day_of_week IS NOT DISTINCT FROM %s"
-            " AND (%s::text IS NULL OR meal_type::text = %s::text)"
-            " AND food_item ILIKE %s ESCAPE '\\'"
-            " ORDER BY meal_type, station, display_order",
-            (scope.value, weekday, meal_value, meal_value, f"%{_escape_like(term.strip())}%"),
         )
         return [_menu_item(row) for row in rows]
 

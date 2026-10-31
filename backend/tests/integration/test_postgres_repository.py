@@ -1,80 +1,15 @@
-"""PostgresRepository against a real Postgres loaded with db/schema.sql, seed.sql and
-migration 001, queried as the read-only `aggrey_readonly` role.
+"""PostgresRepository against the seeded test database (see conftest.py)."""
 
-TEST_DATABASE_URL must point at a disposable server as a superuser, for example a
-local `postgres:16` container. The fixture creates and drops its own database, and
-sets a random login password on the cluster-wide `aggrey_readonly` role, so never
-point it at Supabase.
-"""
-
-import os
-import secrets
-import uuid
-from collections.abc import Awaitable, Callable, Iterator
 from datetime import date, time
-from pathlib import Path
 
 import psycopg
 import pytest
-from psycopg import sql
-from psycopg.conninfo import make_conninfo
-from pydantic import SecretStr
 
-from aggrey.adapters.postgres import PostgresRepository, create_pool
 from aggrey.adapters.repository import RepositoryError
-from aggrey.config import Settings
 from aggrey.domain.models import MealType, MenuScope, ScheduleType
-from tests.conftest import run
+from tests.integration.conftest import requires_database, with_repository
 
-ADMIN_URL = os.environ.get("TEST_DATABASE_URL", "")
-DB_DIR = Path(__file__).resolve().parents[3] / "db"
-SQL_FILES = ("schema.sql", "seed.sql", "migrations/001_readonly_role.sql")
-
-pytestmark = [
-    pytest.mark.integration,
-    pytest.mark.skipif(not ADMIN_URL, reason="set TEST_DATABASE_URL to run integration tests"),
-]
-
-
-@pytest.fixture(scope="module")
-def readonly_dsn() -> Iterator[str]:
-    dbname = f"aggrey_it_{uuid.uuid4().hex[:8]}"
-    password = secrets.token_urlsafe(18)
-    with psycopg.connect(ADMIN_URL, autocommit=True) as conn:
-        conn.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(dbname)))
-    try:
-        with psycopg.connect(make_conninfo(ADMIN_URL, dbname=dbname), autocommit=True) as conn:
-            for name in SQL_FILES:
-                conn.execute((DB_DIR / name).read_bytes())
-            conn.execute(
-                sql.SQL("ALTER ROLE aggrey_readonly WITH LOGIN PASSWORD {}").format(
-                    sql.Literal(password)
-                )
-            )
-        yield make_conninfo(ADMIN_URL, dbname=dbname, user="aggrey_readonly", password=password)
-    finally:
-        with psycopg.connect(ADMIN_URL, autocommit=True) as conn:
-            conn.execute(
-                sql.SQL("DROP DATABASE IF EXISTS {} WITH (FORCE)").format(sql.Identifier(dbname))
-            )
-
-
-def with_repository[T](
-    dsn: str, action: Callable[[PostgresRepository], Awaitable[T]], *, timeout_s: float = 10
-) -> T:
-    async def go() -> T:
-        settings = Settings(database_url=SecretStr(dsn), db_connect_timeout_s=timeout_s)
-        pool = create_pool(settings)
-        await pool.open(wait=False)
-        try:
-            repository = PostgresRepository(
-                pool, statement_timeout_ms=settings.db_statement_timeout_ms
-            )
-            return await action(repository)
-        finally:
-            await pool.close()
-
-    return run(go())
+pytestmark = requires_database
 
 
 def test_readonly_role_sees_the_seeded_dataset(readonly_dsn: str) -> None:
@@ -148,16 +83,6 @@ def test_holiday_sample_menu_has_brunch_and_dinner_without_weekday(readonly_dsn:
     for items in (brunch, dinner):
         assert items
         assert all(item.day_of_week is None for item in items)
-
-
-def test_food_search_matches_substrings_and_escapes_wildcards(readonly_dsn: str) -> None:
-    found = with_repository(
-        readonly_dsn, lambda r: r.search_food("scrambled EGGS", MenuScope.WEEKLY, 1)
-    )
-    assert "Scrambled Eggs" in [item.food_item for item in found]
-
-    assert with_repository(readonly_dsn, lambda r: r.search_food("%", MenuScope.WEEKLY, 1)) == []
-    assert with_repository(readonly_dsn, lambda r: r.search_food("_", MenuScope.WEEKLY, 1)) == []
 
 
 def test_unreachable_database_raises_repository_error() -> None:
