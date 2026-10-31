@@ -305,7 +305,10 @@ The finished-meal rule only applies when the date is today. "What's for lunch to
 
 | Case | Behavior | Status |
 | --- | --- | --- |
-| No meal named | Ask which meal, listing only that day's meals. Save a pending meal question (section 8). | **Open (N-41)**, suggested behavior shown |
+| No meal named, date is today | The next meal (6.4): the meal being served now, otherwise the first meal that starts later today. Then reply as if that meal had been named, so weekday lunch still asks which station. | **Decided (N-41)** |
+| No meal named, today, the next meal is Lite Lunch | Skip Lite Lunch: say Lite Lunch is being served until its end time, with the Lite Lunch note (6.4), then show dinner's menu with its serving time. | **Decided (N-41)** |
+| No meal named, today, no more meals today | A short, natural reply that the cafeteria is closed for the rest of today, for example "The cafeteria's closed for the rest of today." No menu and nothing about tomorrow (same as the N-14 rule). Final wording per N-18. | **Decided (N-41)** |
+| No meal named, any other date ("tomorrow," "Friday") | Resolve the date (6.1) and its schedule (6.2), then ask which meal, listing only that day's meals that have a menu: weekday "breakfast, lunch, or dinner" (Lite Lunch is left out because it has no menu); weekend, holiday, or break "brunch or dinner". Save a pending meal question (section 8). | **Decided (N-41)** |
 | "tonight" with no meal | Dinner | **Decided (N-40)** |
 | Meal not served on that schedule | Section 6.3 | **Decided** as marked there |
 | Date is today and meal is over | Section 6.4 finished-meal rule | **Decided** (N-14) |
@@ -318,7 +321,7 @@ The finished-meal rule only applies when the date is today. "What's for lunch to
 | Dinner (holiday or break) | `holiday_sample` dinner items, labeled as a sample menu | **Decided** (6.6, N-16) |
 | Breakfast, dinner (weekday or weekend) | All items for that day and meal | **Decided** (PRD FR-6) |
 | Station named for a non-lunch meal ("What's at the grill for brunch?") | That station's items for that meal | **Decided (N-40)** |
-| Station named, no meal named ("What's the special today?", "What's at the turntable?") | Use the meal on that day's schedule whose menu has the station (weekday: Pizza is lunch, Dinner / turntable is dinner; weekend: Pizza is brunch). In the current data each station appears in only one meal per day. If data ever puts a station in more than one meal that day, use the next meal (6.4), or the last one if all are over, then apply the finished-meal rule. If none does, use the 6.7 station rule for the day's main meal (lunch on weekdays, brunch otherwise). This rule comes before the N-41 meal question. | **Decided (N-40)** |
+| Station named, no meal named ("What's the special today?", "What's at the turntable?") | Use the meal on that day's schedule whose menu has the station (weekday: Pizza is lunch, Dinner / turntable is dinner; weekend: Pizza is brunch). In the current data each station appears in only one meal per day. If data ever puts a station in more than one meal that day, use the next meal (6.4), or the last one if all are over, then apply the finished-meal rule. If none does, use the 6.7 station rule for the day's main meal (lunch on weekdays, brunch otherwise). This rule comes before the N-41 no-meal rules. | **Decided (N-40)** |
 
 **Decided (N-40):** menu replies for a meal that is not over include its serving time, for example "Dinner today (Mon), 5:00 to 8:00 PM: ...".
 
@@ -386,7 +389,7 @@ Used only when a context is pending (section 8).
 
 The one-line explanation uses only facts in the data, for example "Lunch has 5 stations today. Here's what each one has:" Station descriptions beyond the data (such as "Main hot-food is a plate with sides") would be new content that you would need to supply. **Decided (N-40).**
 
-**Pending meal question** (only if N-41 is approved): a meal word replies with that meal's menu for the saved date. Anything else clears the context and is read as a new message.
+**Pending meal question** (after a "which meal" prompt, N-41): a meal word replies with that meal's menu for the saved date, as if the meal had been named (weekday lunch asks which station). Anything else clears the context and is read as a new message. **Decided (N-41).**
 
 **A station alias with no pending context** ("Pizza" on its own): read as `menu` for that station today, choosing the meal by the 7.1 "station named, no meal named" rule. **Decided (N-40).**
 
@@ -415,7 +418,7 @@ Unsupported date phrase (section 3.2): ask the student to rephrase using a suppo
 | Field | Meaning |
 | --- | --- |
 | sender | The student's phone number. Kept in memory only; never logged. |
-| awaiting | `station` (after a weekday lunch station prompt) or `meal` (after a "which meal" prompt, if N-41 is approved) |
+| awaiting | `station` (after a weekday lunch station prompt) or `meal` (after a "which meal" prompt for a date other than today, N-41) |
 | date | The resolved date the question was about |
 | meal | The meal the question was about (lunch for a station prompt) |
 | created_at | When the context was saved |
@@ -528,12 +531,11 @@ Items this spec waits on. Each is in roadmap Section 1.
 | N-18 | Reply wording, emojis, station order | 10 |
 | N-20 | How long a pending question lasts | 8 |
 | N-22 | First message from a new number | 7.6 |
-| N-41 | Menu question with no meal | 7.1, 7.5, 8 |
 | N-42 | Station prompt for weekend brunch | 7.1 |
 | N-43 | Which data counts as provisional | 6.5 |
 | N-44 | Food lookup for a finished meal | 7.4 |
 
-N-40 (sign-off) was answered on 2026-10-24; see section 14.
+N-40 (sign-off) was answered on 2026-10-24 and N-41 (menu question with no meal) on 2026-10-30; see section 14.
 
 ---
 
@@ -559,7 +561,7 @@ Expected readings for the test suite. When the conversation tests are added, thi
 | 14 | Show me everything for lunch | menu | lunch | today | all | | |
 | 15 | What's for Lite Lunch? | menu | lite_lunch | today | | | Menu unavailable |
 | 16 | What's for light lunch | menu | lite_lunch | today | | | Spelling variant |
-| 17 | What's on the menu today? | menu | | today | | | N-41 |
+| 17 | What's on the menu today? | menu | next meal | today | | | Meal from the time of day (7.1, N-41) |
 | 18 | What time is brunch? | hours | brunch | today | | | |
 | 19 | When does lunch end? | hours | lunch | today | | | PRD user story |
 | 20 | What time is Lite Lunch? | hours | lite_lunch | today | | | |
@@ -598,6 +600,11 @@ Expected readings for the test suite. When the conversation tests are added, thi
 | 53 | When does the caf close? *(Mon 15:30)* | open_now | | today | | | "Nothing is being served right now. Dinner is served 5:00 to 8:00 PM." (7.3) |
 | 54 | lunch today or tomorrow? | menu | lunch | unsupported | | | Two different dates; ask to rephrase (3.2) |
 | 55 | dinner thurs | menu | dinner | next Thursday (today if Thursday) | | | Weekday abbreviation (3.2) |
+| 56 | What's on the menu today? *(Mon 14:30)* | menu | dinner | today | | | Lite Lunch skipped; Lite Lunch note, then dinner (7.1, N-41) |
+| 57 | What's on the menu today? *(Mon 20:30)* | menu | | today | | | Cafeteria closed for the rest of today (7.1, N-41) |
+| 58 | What's on the menu tomorrow? *(Sun)* | menu | ask | tomorrow | | | Asks breakfast, lunch, or dinner (7.1, N-41) |
+| 59 | What's on the menu tomorrow? *(Fri)* | menu | ask | tomorrow | | | Asks brunch or dinner (7.1, N-41) |
+| 60 | dinner *(after meal question)* | follow_up | dinner | saved | | | Section 7.5 |
 
 ---
 
@@ -623,6 +630,7 @@ Every row in `roadmap.md` Section 6 maps to a rule here.
 | 27, 28 | Outside this spec (roadmap M7, webhook handling) |
 | 29 | 7.8 opt-out (N-11) |
 | 30, 31, 35 | 6.4 finished-meal rule (N-14) |
+| 36, 37, 38, 39, 40 | 6.4 next meal, 7.1 no meal named (N-41), 7.5 pending meal question |
 | 32 | 6.1 local date vs UTC |
 
 ---
@@ -648,3 +656,5 @@ The draft was checked against the acceptance matrix (roadmap Section 6) and `db/
 Section 9.4 decisions: "burger"/"hamburger" match the patties and Veggie Burger, not the bun; "fries" no longer matches Stir Fry; egg noodle and green beans hits stay; no wings synonym. Corpus rows 44–53 cover the fixes.
 
 **Amendment, October 27, 2026** (project owner, during M4): section 3.2 now lists every accepted weekday word (the approved row ended in "..."), and a message whose date phrases point to different days is treated as an unrecognized date. Corpus rows 54–55 cover both.
+
+**Amendment, October 30, 2026** (project owner, N-41): a menu question with no meal uses the time of day when the date is today (the next meal, skipping Lite Lunch to dinner, or "the cafeteria's closed for the rest of today" when no meals are left), and asks which meal for any other date, listing only that day's meals that have a menu. Sections 7.1, 7.5, and 8 updated. Corpus rows 17 and 56–60 cover it.

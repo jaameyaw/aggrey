@@ -2,7 +2,7 @@
 
 **Status:** M0 (repository foundation) done on 2026-10-24, except the GitHub settings in step 8 (step 1 done later the same day; see N-31). M1 (database schema on Supabase) done on 2026-10-25. M2 (data import from the workbook) done on 2026-10-27. M3 (backend skeleton) done on 2026-10-24. M4 (date and schedule rules) done on 2026-10-27. No menu services, conversation logic, or deployments exist yet. `db/schema.sql` and `db/seed.sql` were added on 2026-10-24.
 **Created:** October 24, 2026
-**Last updated:** October 27, 2026 (M4 done; N-13 follow-up on weekday words and conflicting dates). Earlier the same day, M1 and M2 marked done. Earlier, October 24, 2026 (answers to N-03, N-12, N-13, N-14, N-15, N-16, N-17, N-19; holiday dinner sample added as dataset `mvp_v1_3`; new module MS and its draft spec; new questions N-40 to N-44; Intent and Logic Spec approved, N-40)
+**Last updated:** October 30, 2026 (N-41 answered: menu question with no meal). Earlier, October 27, 2026 (M4 done; N-13 follow-up on weekday words and conflicting dates). Earlier the same day, M1 and M2 marked done. Earlier, October 24, 2026 (answers to N-03, N-12, N-13, N-14, N-15, N-16, N-17, N-19; holiday dinner sample added as dataset `mvp_v1_3`; new module MS and its draft spec; new questions N-40 to N-44; Intent and Logic Spec approved, N-40)
 **Applies to:** the MVP defined in `Aggrey_MVP_PRD.md`, `Aggrey_Technical_Architecture.md`, and `Aggrey_MVP_Database_Schema.md`.
 
 This roadmap breaks the MVP into modules. Each module lists its goal, dependencies, the inputs required from the project owner, step-by-step work, deliverables, and a definition of done. It adds no product features beyond the PRD.
@@ -66,7 +66,7 @@ Where an option is labeled "suggested," it is a proposal for you to accept or re
 | N-21 | **Per-sender rate limit.** Should Aggrey limit how many messages one number can send per minute? Suggested: yes, with a short "slow down" reply. Approve the number. | M7 |
 | N-22 | **First-time message.** Should the first reply to a new number include a short intro and example questions, or just answer? | M6 |
 | N-40 | **Intent and Logic Specification sign-off.** Review and approve `Aggrey_Intent_Logic_Spec.md` (drafted 2026-10-24 in module MS): the intent list, the slots each intent needs, defaults, the behavior and reply for each case, food matching and synonyms, and the phrase corpus. Nothing in M4–M6 is "supported" until it is in the approved spec. **Answer (2026-10-24):** approved by the project owner after nine review fixes, which are listed in spec section 14. All **Proposed** rules are now decided. Section 9.4 answers: "burger" and "hamburger" match the patties and Veggie Burger, not the bun; "fries" no longer matches Stir Fry; the egg noodle and green bean matches stay; there is no wings synonym. N-11, N-18, N-20, N-22, and N-41 to N-44 stay open. | MS, M4, M5, M6 |
-| N-41 | **Menu question with no meal.** "What's on the menu today?" names no meal. Suggested: ask which meal, listing only the meals served on that day's schedule. | MS, M6 |
+| N-41 | **Menu question with no meal.** "What's on the menu today?" names no meal. Suggested: ask which meal, listing only the meals served on that day's schedule. **Answer (2026-10-30):** use the time of day. For today, answer with the next meal (the one being served now, otherwise the next one later today). If that is Lite Lunch, say Lite Lunch is on with the usual note and show dinner instead. If no meals are left, reply naturally that the cafeteria is closed for the rest of today, with nothing about tomorrow. For any other date, check its schedule first, then ask which meal, listing only that day's meals with a menu ("breakfast, lunch, or dinner" on a weekday; "brunch or dinner" on a weekend, holiday, or break). Spec 7.1, 7.5, and 8 updated. | MS, M6 |
 | N-42 | **Brunch stations.** Weekend brunch has 3–4 stations and 18–22 items (Saturday has 22). The PRD asks for a station only at weekday lunch. Suggested: show all of brunch grouped by station, split per N-19, with no station prompt. | MS, M6 |
 | N-43 | **Which data counts as provisional.** `holidays.verification_status` has four values: `calendar_date; mvp_hours`, `calendar_date; latest_hours`, `calendar_date; user_confirmed_hours`, and `pending_confirmation`. Suggested: only `pending_confirmation` is labeled "not yet confirmed" in replies. | MS, M4, M6 |
 | N-44 | **Food lookup for a finished meal.** At 3:30 PM, "Do they have onion rings today?" matches lunch, which is over. Suggested: report the match and say that lunch is over for today. | MS, M6 |
@@ -267,7 +267,7 @@ The database developer works on the `database/supabase` branch (N-39).
 **Goal:** one approved document that says exactly what Aggrey understands and how it answers. Aggrey is rule-based, so the rules must be written down before they are coded. Without this document, each developer would decide behavior in code, and the tests would have nothing to check against.
 **Depends on:** nothing (documents only). Start now, in parallel with M0–M3.
 **Status:** `docs/Aggrey_Intent_Logic_Spec.md` approved 2026-10-24 (N-40). The open items below are still pending.
-**Needs from you:** N-11, N-18, N-20, N-21, N-22, N-41, N-42, N-43, N-44. N-12, N-13, N-14, N-15, N-16, N-17, N-19, and N-40 are answered.
+**Needs from you:** N-11, N-18, N-20, N-21, N-22, N-42, N-43, N-44. N-12, N-13, N-14, N-15, N-16, N-17, N-19, N-40, and N-41 are answered.
 
 **Steps**
 
@@ -639,6 +639,11 @@ Expected results come from dataset `mvp_v1_3`. Dates are real 2026–2027 dates,
 | 32 | 2026-10-26 (Mon) 22:00 ET (2026-10-27 02:00 UTC) | What's for lunch tomorrow? | Tuesday lunch station prompt. "Today" and "tomorrow" come from `America/New_York`, not UTC (N-12). |
 | 33 | 2026-10-26 (Mon) 08:00 | What's for dinner? | No date given, so Monday dinner (today in `America/New_York`, N-12). |
 | 34 | 2026-11-25 (Wed, Thanksgiving break) | What's for brunch? | Holiday sample brunch (`menu_scope = 'holiday_sample'`), labeled provisional. Never Saturday's `weekly` rows (Section 2, item 7). |
+| 36 | 2026-10-26 (Mon) 08:00 | What's on the menu today? | Monday breakfast, all **9** items, with its serving time (N-41). |
+| 37 | 2026-10-26 (Mon) 14:30 | What's on the menu today? | Lite Lunch is being served until 3:00 PM and most lunch food is usually finished; then Monday dinner, 5:00 to 8:00 PM (N-41). |
+| 38 | 2026-10-26 (Mon) 20:30 | What's on the menu today? | The cafeteria is closed for the rest of today. No menu, nothing about tomorrow (N-41). |
+| 39 | 2026-10-25 (Sun) | What's on the menu tomorrow? | Asks which meal: breakfast, lunch, or dinner (tomorrow is a weekday; Lite Lunch not listed). Replying "dinner" gives Monday dinner (N-41). |
+| 40 | 2026-11-24 (Tue) | What's on the menu tomorrow? | Asks which meal: brunch or dinner (tomorrow is Thanksgiving break) (N-41). |
 
 ---
 
