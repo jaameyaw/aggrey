@@ -115,7 +115,7 @@ Fall Break, Thanksgiving, and Christmas are stored as **break** overrides. The v
 
 ### Lunch-station interaction
 
-For a generic weekday **"What's for lunch?"**, ask which station: Main hot-food, Special, Grill / sandwich, Pasta, or Pizza. A direct station question returns all foods at that station without prompting again. **"Show everything"** returns all five station menus. **"I don't know"** explains the choices. Every food row belonging to a selected station must be returned, not just the first.
+For a generic weekday **"What's for lunch?"** or weekend **"What's for brunch?"**, return every station grouped by station, after one line that says how many stations there are (roadmap N-42). Station names come from that day's menu rows. A direct station question returns all foods at that station only. Every food row belonging to a selected station must be returned, not just the first.
 
 ## 7. Conversation state and duplicate deliveries
 

@@ -63,8 +63,8 @@ The MVP must support the following:
 - If a student asks for lunch on a weekend or holiday, Aggrey must not return a regular lunch menu. It should explain that lunch is not served and provide brunch information when available.
 - If a student asks for breakfast on a weekend or holiday, Aggrey should explain that breakfast is not served and indicate that brunch and dinner are the available meal periods.
 - If a requested meal is valid, Aggrey should return **all** stored items for that day and meal, grouped by station where appropriate. The weekly menu repeats without service dates.
-- For a generic weekday lunch question, ask which station: Main hot-food, Special, Grill / sandwich, Pasta, or Pizza. If the student does not know, give a one-line explanation of the stations followed by the lunch menu grouped by station; if they request everything, show the complete lunch menu grouped by station.
-- A direct station question should be answered without requiring the station question again. Short follow-ups such as "Pizza" should use the pending lunch context.
+- For a weekday lunch or weekend brunch question that names no station, show the whole menu grouped by station, starting with one line that says how many stations there are. Many students don't know the cafeteria has stations, so Aggrey shows them instead of asking. Long replies are split only between stations. (Changed 2026-10-30, roadmap N-42; lunch used to ask which station first.)
+- A direct station question ("What's at the pizza station?", or just "Pizza") returns only that station's items.
 - On holidays and breaks, use the reusable `holiday_sample` brunch and dinner menus. The holiday dinner sample is a copy of Saturday dinner (N-16). Both samples are **provisional**: label them as sample menus and never state them as confirmed holiday menus.
 - If a schedule is provisional (for example, virtual classes/exams), do not imply its serving hours are confirmed.
 - Holiday and academic-break date ranges must be checked before applying normal weekday or weekend schedules.
@@ -93,7 +93,7 @@ If today is an official holiday, Aggrey should respond with the meaning of:
 | FR-9 | Missing data | If required dining data is unavailable, the system says the information is unavailable instead of guessing. |
 | FR-10 | Unclear request | If the request cannot be safely interpreted, the system asks the student to rephrase or provides examples of supported questions. |
 | FR-11 | Reply | The final response is sent back to the same student through Sendblue. |
-| FR-12 | Lunch stations and follow-ups | Generic weekday lunch questions ask for a station; direct station requests, "I don't know", "show everything", and follow-up station selections work. |
+| FR-12 | Lunch and brunch stations | Generic weekday lunch and weekend brunch questions show every station, grouped by station, after a one-line station intro; direct station requests return only that station (N-42). |
 | FR-13 | Landing page | A lightweight page shows Aggrey, sample questions, the number, and a functional click-to-text link. |
 
 ## 5. Supported User Stories

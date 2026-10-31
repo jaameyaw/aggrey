@@ -2,7 +2,7 @@
 
 **Status:** M0 (repository foundation) done on 2026-10-24, except the GitHub settings in step 8 (step 1 done later the same day; see N-31). M1 (database schema on Supabase) done on 2026-10-25. M2 (data import from the workbook) done on 2026-10-27. M3 (backend skeleton) done on 2026-10-24. M4 (date and schedule rules) done on 2026-10-27. M5 (dining data services) done on 2026-10-30. No conversation logic or deployments exist yet. `db/schema.sql` and `db/seed.sql` were added on 2026-10-24.
 **Created:** October 24, 2026
-**Last updated:** October 30, 2026 (M5 done; N-41 answered: menu question with no meal). Earlier, October 27, 2026 (M4 done; N-13 follow-up on weekday words and conflicting dates). Earlier the same day, M1 and M2 marked done. Earlier, October 24, 2026 (answers to N-03, N-12, N-13, N-14, N-15, N-16, N-17, N-19; holiday dinner sample added as dataset `mvp_v1_3`; new module MS and its draft spec; new questions N-40 to N-44; Intent and Logic Spec approved, N-40)
+**Last updated:** October 30, 2026 (M5 done; N-41 answered: menu question with no meal; N-42 answered: no station question for lunch or brunch). Earlier, October 27, 2026 (M4 done; N-13 follow-up on weekday words and conflicting dates). Earlier the same day, M1 and M2 marked done. Earlier, October 24, 2026 (answers to N-03, N-12, N-13, N-14, N-15, N-16, N-17, N-19; holiday dinner sample added as dataset `mvp_v1_3`; new module MS and its draft spec; new questions N-40 to N-44; Intent and Logic Spec approved, N-40)
 **Applies to:** the MVP defined in `Aggrey_MVP_PRD.md`, `Aggrey_Technical_Architecture.md`, and `Aggrey_MVP_Database_Schema.md`.
 
 This roadmap breaks the MVP into modules. Each module lists its goal, dependencies, the inputs required from the project owner, step-by-step work, deliverables, and a definition of done. It adds no product features beyond the PRD.
@@ -61,13 +61,13 @@ Where an option is labeled "suggested," it is a proposal for you to accept or re
 | N-16 | **Holiday and break dinner.** The PRD allows a labeled weekday-dinner fallback. The schema doc says to prefer "verified holiday dinner menu is unavailable." Choose one: (a) show the weekday dinner menu clearly labeled as unconfirmed, or (b) give dinner hours only and say the menu is unavailable. **Answer (2026-10-24):** neither. Copy Saturday dinner into the data as the holiday and break dinner, labeled as a sample menu like holiday brunch. Applied as dataset `mvp_v1_3`: four `holiday_sample` dinner rows, the schema check now allows `holiday_sample` dinner, and the metadata key `holiday_dinner_fallback` is replaced by `holiday_dinner_source = saturday_sample`. Replace the rows if a real holiday dinner menu arrives (N-26). | M5, M6 |
 | N-17 | **Food matching.** "Do they have wings today?" matches nothing in the current data. Approve the matching rules: case-insensitive partial match, basic plurals ("wing" vs "wings"), and "&" vs "and". Should there be a synonym list (for example "mac" matches "Mac & Cheese")? If yes, who maintains it? **Answer (2026-10-24):** Food matching rules and any synonym list are defined in the Intent and Logic Specification (module MS) and approved with it (N-40). Code must not add matching rules or synonyms that are not in the approved spec. | MS, M5, M6 |
 | N-18 | **Reply copy and tone.** Approve the reply templates produced in M6 (wording, emojis yes or no, 12-hour time format, and how stations are shown). | M6 |
-| N-19 | **Long replies.** "Show everything" for weekday lunch is about 20+ items. After checking Sendblue's message length limits, should a long reply be one message or split into several? **Answer (2026-10-24):** Avoid long unrequested replies. A generic "What's for lunch?" asks which station. If the student does not know, Aggrey gives the lunch menu by station. Replies that list several stations are grouped by station. If a reply exceeds Sendblue's length limit (M7 step 1), split it only between stations, never inside one station. **Follow-up answered (2026-10-24):** "I don't know" gets a one-line explanation of the stations, then the lunch menu grouped by station. The PRD is updated to match. | M6, M7 |
-| N-20 | **Follow-up memory.** How long should Aggrey remember a pending lunch station question? Suggested: 10 minutes. | M6 |
+| N-19 | **Long replies.** "Show everything" for weekday lunch is about 20+ items. After checking Sendblue's message length limits, should a long reply be one message or split into several? **Answer (2026-10-24):** Avoid long unrequested replies. A generic "What's for lunch?" asks which station. If the student does not know, Aggrey gives the lunch menu by station. Replies that list several stations are grouped by station. If a reply exceeds Sendblue's length limit (M7 step 1), split it only between stations, never inside one station. **Follow-up answered (2026-10-24):** "I don't know" gets a one-line explanation of the stations, then the lunch menu grouped by station. The PRD is updated to match. **Changed (2026-10-30, N-42):** there is no station question. A generic lunch or brunch question shows every station, grouped, after a one-line station intro. The split rule above still applies. | M6, M7 |
+| N-20 | **Follow-up memory.** How long should Aggrey remember a pending question? Since N-42 the only one is the "which meal" question for another date (N-41). Suggested: 10 minutes. | M6 |
 | N-21 | **Per-sender rate limit.** Should Aggrey limit how many messages one number can send per minute? Suggested: yes, with a short "slow down" reply. Approve the number. | M7 |
 | N-22 | **First-time message.** Should the first reply to a new number include a short intro and example questions, or just answer? | M6 |
 | N-40 | **Intent and Logic Specification sign-off.** Review and approve `Aggrey_Intent_Logic_Spec.md` (drafted 2026-10-24 in module MS): the intent list, the slots each intent needs, defaults, the behavior and reply for each case, food matching and synonyms, and the phrase corpus. Nothing in M4–M6 is "supported" until it is in the approved spec. **Answer (2026-10-24):** approved by the project owner after nine review fixes, which are listed in spec section 14. All **Proposed** rules are now decided. Section 9.4 answers: "burger" and "hamburger" match the patties and Veggie Burger, not the bun; "fries" no longer matches Stir Fry; the egg noodle and green bean matches stay; there is no wings synonym. N-11, N-18, N-20, N-22, and N-41 to N-44 stay open. | MS, M4, M5, M6 |
 | N-41 | **Menu question with no meal.** "What's on the menu today?" names no meal. Suggested: ask which meal, listing only the meals served on that day's schedule. **Answer (2026-10-30):** use the time of day. For today, answer with the next meal (the one being served now, otherwise the next one later today). If that is Lite Lunch, say Lite Lunch is on with the usual note and show dinner instead. If no meals are left, reply naturally that the cafeteria is closed for the rest of today, with nothing about tomorrow. For any other date, check its schedule first, then ask which meal, listing only that day's meals with a menu ("breakfast, lunch, or dinner" on a weekday; "brunch or dinner" on a weekend, holiday, or break). Spec 7.1, 7.5, and 8 updated. | MS, M6 |
-| N-42 | **Brunch stations.** Weekend brunch has 3–4 stations and 18–22 items (Saturday has 22). The PRD asks for a station only at weekday lunch. Suggested: show all of brunch grouped by station, split per N-19, with no station prompt. | MS, M6 |
+| N-42 | **Brunch stations.** Weekend brunch has 3–4 stations and 18–22 items (Saturday has 22). The PRD asks for a station only at weekday lunch. Suggested: show all of brunch grouped by station, split per N-19, with no station prompt. **Answer (2026-10-30):** yes, and weekday lunch works the same way, because many students don't know the cafeteria has stations. A generic lunch or brunch question shows every station grouped by station, after a one-line intro that says how many stations there are (for example "Lunch has 5 stations today:"). A station named directly still returns only that station. The lunch station question and its "I don't know" and "everything" follow-ups are dropped. Spec 7.1, 7.5, and 8, PRD FR-12, and the architecture's lunch-station section updated. | MS, M6 |
 | N-43 | **Which data counts as provisional.** `holidays.verification_status` has four values: `calendar_date; mvp_hours`, `calendar_date; latest_hours`, `calendar_date; user_confirmed_hours`, and `pending_confirmation`. Suggested: only `pending_confirmation` is labeled "not yet confirmed" in replies. | MS, M4, M6 |
 | N-44 | **Food lookup for a finished meal.** At 3:30 PM, "Do they have onion rings today?" matches lunch, which is over. Suggested: report the match and say that lunch is over for today. | MS, M6 |
 
@@ -116,7 +116,7 @@ Resolve these before or during M0. Do not silently work around them.
 5. ~~The README says "iMessage." The PRD says "text" via Sendblue.~~ **Resolved 2026-10-24 (N-03):** SMS is supported through Sendblue's fallback. The README now says "text."
 6. ~~All project documents, `schema.sql`, `seed.sql`, and this roadmap are untracked in Git.~~ **Fixed 2026-10-24 (M0):** committed as "docs: add MVP specification."
 7. **Confirmed 2026-10-24:** the metadata key `holiday_brunch_source = saturday_sample` only records where the holiday sample came from. The runtime menu scope is `holiday_sample`. Code must query `menu_scope = 'holiday_sample'` and must never query or copy Saturday (`day_of_week = 6`) rows for a holiday or break. M5 implements this rule and tests it.
-8. ~~**Lunch "I don't know" behavior conflict.**~~ **Resolved 2026-10-24:** a one-line explanation of the stations, then the lunch menu grouped by station. The PRD and acceptance row 5 are updated.
+8. ~~**Lunch "I don't know" behavior conflict.**~~ **Resolved 2026-10-24:** a one-line explanation of the stations, then the lunch menu grouped by station. The PRD and acceptance row 5 are updated. Superseded 2026-10-30 by N-42: there is no station question.
 9. **Intent list mismatch.** PRD FR-2 names four intents: menu lookup, hours lookup, food-item lookup, and unsupported/unclear. M6 below also names "open-now" and "help," and N-11 adds opt-out keywords. The Intent and Logic Specification (MS) must settle the final list, and the PRD should then be updated to match. The draft spec (section 4) proposes keeping the PRD's four dining intents, treating "open now" as part of hours lookup, and adding `follow_up`, `help`, and `opt_out` as conversation controls. This is resolved when N-40 is signed off.
 
 ---
@@ -267,7 +267,7 @@ The database developer works on the `database/supabase` branch (N-39).
 **Goal:** one approved document that says exactly what Aggrey understands and how it answers. Aggrey is rule-based, so the rules must be written down before they are coded. Without this document, each developer would decide behavior in code, and the tests would have nothing to check against.
 **Depends on:** nothing (documents only). Start now, in parallel with M0–M3.
 **Status:** `docs/Aggrey_Intent_Logic_Spec.md` approved 2026-10-24 (N-40). The open items below are still pending.
-**Needs from you:** N-11, N-18, N-20, N-21, N-22, N-42, N-43, N-44. N-12, N-13, N-14, N-15, N-16, N-17, N-19, N-40, and N-41 are answered.
+**Needs from you:** N-11, N-18, N-20, N-21, N-22, N-43, N-44. N-12, N-13, N-14, N-15, N-16, N-17, N-19, N-40, N-41, and N-42 are answered.
 
 **Steps**
 
@@ -286,7 +286,7 @@ The database developer works on the `database/supabase` branch (N-39).
    - "Is the caf open?" inside and between serving windows (N-15).
    - Holiday and break menus: `holiday_sample` brunch, and dinner per N-16.
    - Provisional data (for example the virtual classes period).
-5. **Lunch station flow** (PRD FR-12): generic question, direct station, "I don't know" (Section 2, item 8), "show everything," short follow-up, and context expiry (N-20).
+5. **Station replies** (PRD FR-12, N-42): a generic lunch or brunch question shows every station after a station intro line; a direct station question returns that station only.
 6. **Food matching** (N-17): normalization steps, partial matching, plurals, "&" vs "and," the synonym list, and who maintains it. The wording for no match is "not listed on the stored menu," never "not served."
 7. **Station aliases:** for example "grill" and "burgers" for Grill / sandwich. Only aliases written here are supported.
 8. **Long replies** (N-19): grouping by station and the splitting rule.
@@ -465,13 +465,10 @@ A `db/seed.sql` already exists (added 2026-10-24). It says it was generated from
    - Station name and approved aliases (for example "grill," "burgers").
    - Food keyword for food lookups.
    - Opt-out and help keywords (N-11).
-3. **Lunch station flow** (PRD FR-12):
-   - A generic weekday lunch question asks which station, listing the stations read from the data.
-   - A direct station question ("What's at the pizza station?") answers immediately.
-   - "I don't know" gives a one-line explanation of the stations, then the lunch menu grouped by station (N-19).
-   - "Show everything" or "all" returns every station, grouped by station.
-   - A short follow-up ("Pizza") uses the pending lunch context.
-4. **Context store:** keyed by sender, holding the pending meal, date, and awaiting-station flag. Expires after the time set in N-20. In memory and bounded in size for the single-instance pilot (architecture section 7). Put it behind an interface so a durable store can replace it later.
+3. **Station replies** (PRD FR-12, N-42):
+   - A generic weekday lunch or weekend brunch question shows every station, grouped by station, after one line that says how many stations there are. Station names come from the data. No station question.
+   - A direct station question ("What's at the pizza station?", or "Pizza" on its own) returns only that station.
+4. **Context store:** keyed by sender, holding the pending date and awaiting-meal flag (N-41; there is no station question since N-42). Expires after the time set in N-20. In memory and bounded in size for the single-instance pilot (architecture section 7). Put it behind an interface so a durable store can replace it later.
 5. **Response formatter:** turn M5 results into the approved templates (N-18). Rules:
    - Always state the day being described ("Today (Wed)…", "Tomorrow…").
    - Label anything provisional or unverified in plain words.
@@ -479,7 +476,7 @@ A `db/seed.sql` already exists (added 2026-10-24). It says it was generated from
    - If the asked-about meal is already over today, say so and give the next meal and its serving time (N-14). Do not show the finished meal's menu.
    - Group multi-station replies by station. If a reply exceeds Sendblue's length limit, split it only between stations (N-19).
 6. **Unclear or unsupported messages:** reply with 2–3 example questions. Never guess.
-7. Unit tests: every phrase in the corpus, every station-flow path, context expiry, and every Section 6 row end to end through interpreter, services (fake repository), and formatter.
+7. Unit tests: every phrase in the corpus, every station reply path, context expiry, and every Section 6 row end to end through interpreter, services (fake repository), and formatter.
 
 **Deliverables:** `conversation/interpreter.py`, `conversation/context.py`, `conversation/formatter.py`, approved reply templates, tests.
 **Done when:** the approved phrase corpus passes 100%, all Section 6 conversation rows pass, and you have approved sample replies.
@@ -607,10 +604,10 @@ Expected results come from dataset `mvp_v1_3`. Dates are real 2026–2027 dates,
 | # | Date (day) and time | Message | Expected meaning |
 | --- | --- | --- | --- |
 | 1 | 2026-10-26 (Mon) 08:00 | What's for breakfast? | All **9** Monday breakfast items, Scrambled Eggs through Classic Oatmeal. |
-| 2 | 2026-10-26 (Mon) | What's for lunch? | Asks which station: Main hot-food, Special, Grill / sandwich, Pasta, Pizza. |
-| 3 | Same conversation | Pizza | All **4** Monday pizzas: Cheese, Pepperoni, Roasted Vegetable, Margherita. |
+| 2 | 2026-10-26 (Mon) | What's for lunch? | One line saying lunch has 5 stations today, then every item grouped by station: Grill / sandwich, Main hot-food, Pasta, Pizza, Special. No station question (N-42). |
+| 3 | 2026-10-26 (Mon) | Pizza | All **4** Monday pizzas: Cheese, Pepperoni, Roasted Vegetable, Margherita. |
 | 4 | 2026-10-26 (Mon) | Show me everything for lunch | All 5 stations and every item, grouped by station; split only between stations if over the length limit (N-19). |
-| 5 | 2026-10-26 (Mon) | What's for lunch? then "I don't know" | One-line explanation of the stations, then the lunch menu grouped by station (N-19). |
+| 5 | 2026-10-31 (Sat) 10:00 | What's for brunch? | One line saying how many stations brunch has today, then all **22** Saturday brunch items grouped by station. No station question (N-42). |
 | 6 | 2026-10-27 (Tue) | What's the special today? | Taco Bar, with no station prompt. |
 | 7 | 2026-10-31 (Sat) | What's for lunch? | Lunch is not served on weekends; brunch and dinner are; shows Saturday brunch. |
 | 8 | 2026-10-31 (Sat) | What's for breakfast? | Breakfast is not served; brunch and dinner are the meals today. |
@@ -627,7 +624,7 @@ Expected results come from dataset `mvp_v1_3`. Dates are real 2026–2027 dates,
 | 19 | 2026-10-30 (Fri) | Is there a beef patty at lunch? | Not listed (Friday grill has no Beef Patty). |
 | 20 | 2026-10-26 (Mon) 15:30 | Is the caf open? | No meal being served now; dinner starts 5:00 PM (per N-15 wording). |
 | 21 | 2026-10-26 (Mon) 12:00 | Is the caf still open? | Lunch is being served until 2:00 PM. |
-| 22 | 2026-10-25 (Sun) | What's for lunch tomorrow? | Monday lunch station prompt (tomorrow is a weekday). |
+| 22 | 2026-10-25 (Sun) | What's for lunch tomorrow? | Monday lunch, every station grouped, after the station intro line (tomorrow is a weekday; N-42). |
 | 23 | 2026-11-24 (Tue) | What's for lunch tomorrow? | Tomorrow is Thanksgiving break; no regular lunch. |
 | 24 | Any | asdfgh | Unclear; offers example questions. |
 | 25 | Any | Unsupported date phrase (per N-13) | Asks to rephrase; does not guess a date. |
@@ -638,7 +635,7 @@ Expected results come from dataset `mvp_v1_3`. Dates are real 2026–2027 dates,
 | 30 | 2026-10-26 (Mon) 15:30 | What's for lunch? | Lunch is over; dinner is served 5:00 to 8:00 PM (N-14). Lunch menu not shown. |
 | 31 | 2026-10-26 (Mon) 14:30 | What's for lunch? | Lunch is over; Lite Lunch is being served until 3:00 PM, and most lunch food is usually finished by then (N-14). |
 | 35 | 2026-10-26 (Mon) 20:30 | What's for dinner? | Dinner is over for today. No menu, and no pointer to tomorrow (N-14). |
-| 32 | 2026-10-26 (Mon) 22:00 ET (2026-10-27 02:00 UTC) | What's for lunch tomorrow? | Tuesday lunch station prompt. "Today" and "tomorrow" come from `America/New_York`, not UTC (N-12). |
+| 32 | 2026-10-26 (Mon) 22:00 ET (2026-10-27 02:00 UTC) | What's for lunch tomorrow? | Tuesday lunch, every station grouped, after the station intro line (N-42). "Today" and "tomorrow" come from `America/New_York`, not UTC (N-12). |
 | 33 | 2026-10-26 (Mon) 08:00 | What's for dinner? | No date given, so Monday dinner (today in `America/New_York`, N-12). |
 | 34 | 2026-11-25 (Wed, Thanksgiving break) | What's for brunch? | Holiday sample brunch (`menu_scope = 'holiday_sample'`), labeled provisional. Never Saturday's `weekly` rows (Section 2, item 7). |
 | 36 | 2026-10-26 (Mon) 08:00 | What's on the menu today? | Monday breakfast, all **9** items, with its serving time (N-41). |

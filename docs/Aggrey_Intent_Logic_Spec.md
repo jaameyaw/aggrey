@@ -156,7 +156,7 @@ The full station name, normalized ("grill sandwich," "main hot food"), always wo
 | `hours` | When a meal starts or ends, or the day's serving times | hours lookup |
 | `open_now` | Is anything being served right now | hours lookup |
 | `food_lookup` | Is a specific food on the menu | food-item lookup |
-| `follow_up` | A short reply to a question Aggrey just asked (station or meal) | part of FR-12 |
+| `follow_up` | A short reply to a question Aggrey just asked (which meal, N-41) | conversation control |
 | `help` | What Aggrey can do, or a greeting | unsupported/unclear (FR-10) |
 | `opt_out` | STOP and similar keywords | not in PRD; N-11 |
 | `unclear` | Anything else | unsupported/unclear (FR-10) |
@@ -185,7 +185,7 @@ If you approve this list, the PRD's FR-2 should note that `open_now` is part of 
 | 1 | Empty message, or only emoji or punctuation | "??" | `unclear` |
 | 2 | Whole message is an opt-out keyword | "STOP" | `opt_out` |
 | 3 | Whole message is a help keyword or greeting | "help", "hi" | `help` |
-| 4 | A context is pending and the message is a short answer to it (section 8) | "Pizza" after the station question | `follow_up` |
+| 4 | A context is pending and the message is a short answer to it (section 8) | "dinner" after the which-meal question | `follow_up` |
 | 5 | Unsupported date phrase present (section 3.2) | "What's for lunch 11/25?" | Intent is still detected by rules 6–9, but the reply asks the student to rephrase the date |
 | 6 | `open_now` trigger, and no "what time" or "when" next to a meal word | "Is the caf open?", "Is lunch still going?" | `open_now` |
 | 7 | `hours` trigger | "What time is brunch?", "When does lunch end?" | `hours` |
@@ -305,7 +305,7 @@ The finished-meal rule only applies when the date is today. "What's for lunch to
 
 | Case | Behavior | Status |
 | --- | --- | --- |
-| No meal named, date is today | The next meal (6.4): the meal being served now, otherwise the first meal that starts later today. Then reply as if that meal had been named, so weekday lunch still asks which station. | **Decided (N-41)** |
+| No meal named, date is today | The next meal (6.4): the meal being served now, otherwise the first meal that starts later today. Then reply as if that meal had been named, so weekday lunch shows every station (N-42). | **Decided (N-41)** |
 | No meal named, today, the next meal is Lite Lunch | Skip Lite Lunch: say Lite Lunch is being served until its end time, with the Lite Lunch note (6.4), then show dinner's menu with its serving time. | **Decided (N-41)** |
 | No meal named, today, no more meals today | A short, natural reply that the cafeteria is closed for the rest of today, for example "The cafeteria's closed for the rest of today." No menu and nothing about tomorrow (same as the N-14 rule). Final wording per N-18. | **Decided (N-41)** |
 | No meal named, any other date ("tomorrow," "Friday") | Resolve the date (6.1) and its schedule (6.2), then ask which meal, listing only that day's meals that have a menu: weekday "breakfast, lunch, or dinner" (Lite Lunch is left out because it has no menu); weekend, holiday, or break "brunch or dinner". Save a pending meal question (section 8). | **Decided (N-41)** |
@@ -313,15 +313,17 @@ The finished-meal rule only applies when the date is today. "What's for lunch to
 | Meal not served on that schedule | Section 6.3 | **Decided** as marked there |
 | Date is today and meal is over | Section 6.4 finished-meal rule | **Decided** (N-14) |
 | Lite Lunch | Section 6.7 | **Decided** |
-| Weekday lunch, no station named | Ask which station, listing stations from that day's lunch data. Save a pending station question. | **Decided** (PRD FR-12) |
+| Weekday lunch, no station named | Every station, grouped by station, after the station intro line (below). No station question. | **Decided (N-42)**, replaces the PRD FR-12 station question |
 | Weekday lunch, station named | That station's items only. No station question. | **Decided** (PRD FR-12) |
-| Weekday lunch, "everything," "all," "full menu" | Every station, grouped by station | **Decided** (PRD FR-12, N-19) |
-| Brunch (weekend) | All brunch items grouped by station, with no station question | **Open (N-42)**, suggested behavior shown |
+| Weekday lunch, "everything," "all," "full menu" | Same as no station named: every station, grouped by station, after the station intro line | **Decided** (PRD FR-12, N-19, N-42) |
+| Brunch (weekend) | All brunch items grouped by station, after the station intro line. No station question. | **Decided (N-42)** |
 | Brunch (holiday or break) | `holiday_sample` items grouped by station, labeled as a sample menu | **Decided** (6.6) |
 | Dinner (holiday or break) | `holiday_sample` dinner items, labeled as a sample menu | **Decided** (6.6, N-16) |
 | Breakfast, dinner (weekday or weekend) | All items for that day and meal | **Decided** (PRD FR-6) |
 | Station named for a non-lunch meal ("What's at the grill for brunch?") | That station's items for that meal | **Decided (N-40)** |
 | Station named, no meal named ("What's the special today?", "What's at the turntable?") | Use the meal on that day's schedule whose menu has the station (weekday: Pizza is lunch, Dinner / turntable is dinner; weekend: Pizza is brunch). In the current data each station appears in only one meal per day. If data ever puts a station in more than one meal that day, use the next meal (6.4), or the last one if all are over, then apply the finished-meal rule. If none does, use the 6.7 station rule for the day's main meal (lunch on weekdays, brunch otherwise). This rule comes before the N-41 no-meal rules. | **Decided (N-40)** |
+
+**Station intro line — Decided (N-42, 2026-10-30):** a weekday lunch or brunch reply that lists every station opens with one line built from the data that says how many stations there are, for example "Lunch has 5 stations today:". Many students don't know the cafeteria has stations, so the reply shows them instead of asking. Station names and the count come from that day's menu rows, never a fixed list. Long replies are split only between stations (N-19).
 
 **Decided (N-40):** menu replies for a meal that is not over include its serving time, for example "Dinner today (Mon), 5:00 to 8:00 PM: ...".
 
@@ -378,18 +380,9 @@ Example (Monday): "Do they have onion rings?" gives Onion Rings at lunch, Grill 
 
 Used only when a context is pending (section 8).
 
-**Pending station question** (after a weekday lunch station prompt):
+**No station question — Decided (N-42, 2026-10-30).** Weekday lunch no longer asks which station (7.1), so there is no pending station question. Its follow-ups ("I don't know," "everything," and similar) are withdrawn. Station descriptions beyond the data (such as "Main hot-food is a plate with sides") would still be new content that you would need to supply.
 
-| Student replies | Behavior | Status |
-| --- | --- | --- |
-| A station alias or name ("pizza," "grill") | That station's items for the saved date | **Decided** (PRD FR-12) |
-| "I don't know," "idk," "not sure," "what are the stations," "options," "which ones" | A one-line explanation of the stations, then the lunch menu grouped by station | **Decided** (N-19, 2026-10-24) |
-| "everything," "all," "all of it," "show everything," "full menu," "both" | Every station, grouped by station | **Decided** (PRD FR-12) |
-| Anything else | Clear the context and read the message as a new message (section 5) | **Decided (N-40)** |
-
-The one-line explanation uses only facts in the data, for example "Lunch has 5 stations today. Here's what each one has:" Station descriptions beyond the data (such as "Main hot-food is a plate with sides") would be new content that you would need to supply. **Decided (N-40).**
-
-**Pending meal question** (after a "which meal" prompt, N-41): a meal word replies with that meal's menu for the saved date, as if the meal had been named (weekday lunch asks which station). Anything else clears the context and is read as a new message. **Decided (N-41).**
+**Pending meal question** (after a "which meal" prompt, N-41): a meal word replies with that meal's menu for the saved date, as if the meal had been named (weekday lunch shows every station). Anything else clears the context and is read as a new message. **Decided (N-41).**
 
 **A station alias with no pending context** ("Pizza" on its own): read as `menu` for that station today, choosing the meal by the 7.1 "station named, no meal named" rule. **Decided (N-40).**
 
@@ -418,9 +411,8 @@ Unsupported date phrase (section 3.2): ask the student to rephrase using a suppo
 | Field | Meaning |
 | --- | --- |
 | sender | The student's phone number. Kept in memory only; never logged. |
-| awaiting | `station` (after a weekday lunch station prompt) or `meal` (after a "which meal" prompt for a date other than today, N-41) |
+| awaiting | `meal` (after a "which meal" prompt for a date other than today, N-41). There is no station prompt (N-42). |
 | date | The resolved date the question was about |
-| meal | The meal the question was about (lunch for a station prompt) |
 | created_at | When the context was saved |
 
 Rules:
@@ -428,7 +420,7 @@ Rules:
 - **Open (N-20):** how long a context lasts. Suggested 10 minutes. After that it is ignored.
 - A sender has at most one context. A new prompt replaces the old one. **Decided (N-40).**
 - The context is cleared after a `follow_up` is answered or when the next message is read as a new message. **Decided (N-40).**
-- "Short answer to a pending context" (section 5, rule 4) means the whole message is a station alias, a meal word, or one of the follow-up phrases in 7.5, optionally with "the," "station," "please," or "pls." **Decided (N-40).**
+- "Short answer to a pending context" (section 5, rule 4) means the whole message is a meal word, optionally with "the," "please," or "pls." **Decided (N-40)**, narrowed by N-42 when the station question was withdrawn.
 
 ---
 
@@ -531,11 +523,10 @@ Items this spec waits on. Each is in roadmap Section 1.
 | N-18 | Reply wording, emojis, station order | 10 |
 | N-20 | How long a pending question lasts | 8 |
 | N-22 | First message from a new number | 7.6 |
-| N-42 | Station prompt for weekend brunch | 7.1 |
 | N-43 | Which data counts as provisional | 6.5 |
 | N-44 | Food lookup for a finished meal | 7.4 |
 
-N-40 (sign-off) was answered on 2026-10-24 and N-41 (menu question with no meal) on 2026-10-30; see section 14.
+N-40 (sign-off) was answered on 2026-10-24 and N-41 (menu question with no meal) and N-42 (no station question) on 2026-10-30; see section 14.
 
 ---
 
@@ -576,9 +567,9 @@ Expected readings for the test suite. When the conversation tests are added, thi
 | 29 | do they have mac n cheese | food_lookup | | today | | mac and cheese | Synonym |
 | 30 | Is there pizza at lunch? | food_lookup | lunch | today | | pizza | Food lookup wins over station |
 | 31 | any chicken tomorrow? | food_lookup | | tomorrow | | chicken | |
-| 32 | Pizza *(after station question)* | follow_up | lunch | saved | Pizza | | |
-| 33 | I don't know *(after station question)* | follow_up | lunch | saved | all | | Explanation, then all stations |
-| 34 | everything *(after station question)* | follow_up | lunch | saved | all | | |
+| 32 | Pizza | menu | lunch | today | Pizza | | Station alone; no context needed (7.5, N-42) |
+| 33 | I don't know *(after a lunch menu)* | unclear | | | | | No pending question since N-42 |
+| 34 | everything *(no pending question)* | unclear | | | | | No meal word and no context (N-42) |
 | 35 | grill *(no pending question)* | menu | lunch or brunch | today | Grill / sandwich | | Section 7.5 |
 | 36 | What's for lunch Friday? | menu | lunch | next Friday (today if Friday) | | | N-13 |
 | 37 | What's for dinner 11/25? | menu | dinner | unsupported | | | Ask to rephrase (N-13) |
@@ -615,7 +606,7 @@ Every row in `roadmap.md` Section 6 maps to a rule here.
 | Acceptance rows | Spec sections |
 | --- | --- |
 | 1, 33 | 6.1, 7.1 (menu for a valid meal, no date given) |
-| 2, 3, 4, 5, 22 | 7.1 weekday lunch, 7.5 follow-ups, 8 context |
+| 2, 3, 4, 5, 22 | 7.1 weekday lunch and brunch, station intro line (N-42), 7.5 station named alone |
 | 6 | 3.3 station aliases, 7.1 station named |
 | 7, 8, 14 | 6.3 meal not served |
 | 9, 13, 15 | 7.2 hours |
@@ -658,3 +649,5 @@ Section 9.4 decisions: "burger"/"hamburger" match the patties and Veggie Burger,
 **Amendment, October 27, 2026** (project owner, during M4): section 3.2 now lists every accepted weekday word (the approved row ended in "..."), and a message whose date phrases point to different days is treated as an unrecognized date. Corpus rows 54–55 cover both.
 
 **Amendment, October 30, 2026** (project owner, N-41): a menu question with no meal uses the time of day when the date is today (the next meal, skipping Lite Lunch to dinner, or "the cafeteria's closed for the rest of today" when no meals are left), and asks which meal for any other date, listing only that day's meals that have a menu. Sections 7.1, 7.5, and 8 updated. Corpus rows 17 and 56–60 cover it.
+
+**Amendment, October 30, 2026** (project owner, N-42): many students don't know the cafeteria has stations, so weekday lunch and weekend brunch no longer ask which station. They show every station grouped by station, after a one-line station intro built from the data. A station named directly still returns only that station. The pending station question and its follow-ups are withdrawn. Sections 4, 5, 7.1, 7.5, and 8 updated; corpus rows 32–34 changed.
