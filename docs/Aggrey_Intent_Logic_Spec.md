@@ -427,7 +427,7 @@ Unsupported date phrase (section 3.2): ask the student to rephrase using a suppo
 
 Rules:
 
-- **Open (N-20):** how long a context lasts. Suggested 10 minutes. After that it is ignored.
+- **Decided (N-20, 2026-11-15):** a context lasts 10 minutes from `created_at`. A message that arrives more than 10 minutes later ignores it and is read as a new message. Example: after "What's on the menu tomorrow?" on Sunday, "dinner" within 10 minutes gives Monday dinner; "dinner" 11 minutes later gives today's (Sunday) dinner.
 - A sender has at most one context. A new prompt replaces the old one. **Decided (N-40).**
 - The context is cleared after a `follow_up` is answered or when the next message is read as a new message. **Decided (N-40).**
 - "Short answer to a pending context" (section 5, rule 4) means the whole message is a meal word, optionally with "the," "please," or "pls." **Decided (N-40)**, narrowed by N-42 when the station question was withdrawn.
@@ -531,9 +531,8 @@ Items this spec waits on. Each is in roadmap Section 1.
 | --- | --- | --- |
 | N-11 | STOP and HELP handling | 3.5, 7.8 |
 | N-18 | Reply wording, emojis, station order | 10 |
-| N-20 | How long a pending question lasts | 8 |
 
-N-40 (sign-off) was answered on 2026-10-24 and N-41 (menu question with no meal) N-42 (no station question), N-43 (override hours treated as confirmed), and N-44 (food lookup for a finished meal) on 2026-10-30, and N-22 (first message from a new number) on 2026-11-14; see section 14.
+N-40 (sign-off) was answered on 2026-10-24 and N-41 (menu question with no meal) N-42 (no station question), N-43 (override hours treated as confirmed), and N-44 (food lookup for a finished meal) on 2026-10-30, N-22 (first message from a new number) on 2026-11-14, and N-20 (how long a pending question lasts) on 2026-11-15; see section 14.
 
 ---
 
@@ -630,6 +629,7 @@ Every row in `roadmap.md` Section 6 maps to a rule here.
 | 29 | 7.8 opt-out (N-11) |
 | 30, 31, 35 | 6.4 finished-meal rule (N-14) |
 | 36, 37, 38, 39, 40 | 6.4 next meal, 7.1 no meal named (N-41), 7.5 pending meal question |
+| 44 | 8 context lasts 10 minutes (N-20) |
 | 32 | 6.1 local date vs UTC |
 | 42, 43 | 7.6 first message from a new number (N-22) |
 
@@ -666,3 +666,5 @@ Section 9.4 decisions: "burger"/"hamburger" match the patties and Veggie Burger,
 **Amendment, October 30, 2026** (project owner, N-44): a food lookup that matches a meal already over today reports the match and says that meal is over for today. Section 7.4 step 6 updated; corpus row 61 covers it.
 
 **Amendment, November 14, 2026** (project owner, N-22): the first message from a new number gets a fixed intro, sent as its own text. A greeting or help gets only the intro; any other message gets the intro, then its normal reply as a second text. Section 7.6 updated; acceptance rows 42 and 43 cover it.
+
+**Amendment, November 15, 2026** (project owner, N-20): a pending context lasts 10 minutes. After that, the next message is read as a new message. Section 8 updated; acceptance row 44 covers it.
