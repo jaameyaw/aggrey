@@ -2,7 +2,7 @@
 
 **Status:** M0 (repository foundation) done on 2026-10-24, except the GitHub settings in step 8 (step 1 done later the same day; see N-31). M1 (database schema on Supabase) done on 2026-10-25. M2 (data import from the workbook) done on 2026-10-27. M3 (backend skeleton) done on 2026-10-24. M4 (date and schedule rules) done on 2026-10-27. M5 (dining data services) done on 2026-10-30. No conversation logic or deployments exist yet. `db/schema.sql` and `db/seed.sql` were added on 2026-10-24.
 **Created:** October 24, 2026
-**Last updated:** November 15, 2026 (N-20 answered: a pending question lasts 10 minutes). Earlier, November 14, 2026 (N-22 answered: first message from a new number). Earlier, October 30, 2026 (M5 done; N-41 answered: menu question with no meal; N-42 answered: no station question for lunch or brunch; N-43 answered: override hours treated as confirmed; N-44 answered: food lookup for a finished meal). Earlier, October 27, 2026 (M4 done; N-13 follow-up on weekday words and conflicting dates). Earlier the same day, M1 and M2 marked done. Earlier, October 24, 2026 (answers to N-03, N-12, N-13, N-14, N-15, N-16, N-17, N-19; holiday dinner sample added as dataset `mvp_v1_3`; new module MS and its draft spec; new questions N-40 to N-44; Intent and Logic Spec approved, N-40)
+**Last updated:** November 15, 2026 (N-20 answered: a pending question lasts 10 minutes; N-21 answered: 5 messages per minute per sender). Earlier, November 14, 2026 (N-22 answered: first message from a new number). Earlier, October 30, 2026 (M5 done; N-41 answered: menu question with no meal; N-42 answered: no station question for lunch or brunch; N-43 answered: override hours treated as confirmed; N-44 answered: food lookup for a finished meal). Earlier, October 27, 2026 (M4 done; N-13 follow-up on weekday words and conflicting dates). Earlier the same day, M1 and M2 marked done. Earlier, October 24, 2026 (answers to N-03, N-12, N-13, N-14, N-15, N-16, N-17, N-19; holiday dinner sample added as dataset `mvp_v1_3`; new module MS and its draft spec; new questions N-40 to N-44; Intent and Logic Spec approved, N-40)
 **Applies to:** the MVP defined in `Aggrey_MVP_PRD.md`, `Aggrey_Technical_Architecture.md`, and `Aggrey_MVP_Database_Schema.md`.
 
 This roadmap breaks the MVP into modules. Each module lists its goal, dependencies, the inputs required from the project owner, step-by-step work, deliverables, and a definition of done. It adds no product features beyond the PRD.
@@ -63,7 +63,7 @@ Where an option is labeled "suggested," it is a proposal for you to accept or re
 | N-18 | **Reply copy and tone.** Approve the reply templates produced in M6 (wording, emojis yes or no, 12-hour time format, and how stations are shown). | M6 |
 | N-19 | **Long replies.** "Show everything" for weekday lunch is about 20+ items. After checking Sendblue's message length limits, should a long reply be one message or split into several? **Answer (2026-10-24):** Avoid long unrequested replies. A generic "What's for lunch?" asks which station. If the student does not know, Aggrey gives the lunch menu by station. Replies that list several stations are grouped by station. If a reply exceeds Sendblue's length limit (M7 step 1), split it only between stations, never inside one station. **Follow-up answered (2026-10-24):** "I don't know" gets a one-line explanation of the stations, then the lunch menu grouped by station. The PRD is updated to match. **Changed (2026-10-30, N-42):** there is no station question. A generic lunch or brunch question shows every station, grouped, after a one-line station intro. The split rule above still applies. | M6, M7 |
 | N-20 | **Follow-up memory.** How long should Aggrey remember a pending question? Since N-42 the only one is the "which meal" question for another date (N-41). Suggested: 10 minutes. **Answer (2026-11-15):** 10 minutes, as suggested. Spec section 8 updated. | M6 |
-| N-21 | **Per-sender rate limit.** Should Aggrey limit how many messages one number can send per minute? Suggested: yes, with a short "slow down" reply. Approve the number. | M7 |
+| N-21 | **Per-sender rate limit.** Should Aggrey limit how many messages one number can send per minute? Suggested: yes, with a short "slow down" reply. Approve the number. **Answer (2026-11-15):** yes, 5 messages per number in any 60 seconds. The 6th message gets one short "slow down" reply; after that, Aggrey ignores that number until it is back under 5 in the last 60 seconds, with no repeated warnings. Every message received counts, including ignored ones, so a looping bot stays blocked. Kept in memory for the single-instance pilot, like the other per-sender state (architecture section 7). The "slow down" wording is part of N-18. | M7 |
 | N-22 | **First-time message.** Should the first reply to a new number include a short intro and example questions, or just answer? **Answer (2026-11-14):** send a fixed intro ("Hey, I'm Aggrey. I text you about the caf. ... how may I help you?", full text in spec 7.6) as its own text. A greeting or help gets only the intro. Any other first message gets the intro, then its normal reply as a second text. Spec 7.6 updated. | M6 |
 | N-40 | **Intent and Logic Specification sign-off.** Review and approve `Aggrey_Intent_Logic_Spec.md` (drafted 2026-10-24 in module MS): the intent list, the slots each intent needs, defaults, the behavior and reply for each case, food matching and synonyms, and the phrase corpus. Nothing in M4–M6 is "supported" until it is in the approved spec. **Answer (2026-10-24):** approved by the project owner after nine review fixes, which are listed in spec section 14. All **Proposed** rules are now decided. Section 9.4 answers: "burger" and "hamburger" match the patties and Veggie Burger, not the bun; "fries" no longer matches Stir Fry; the egg noodle and green bean matches stay; there is no wings synonym. N-11, N-18, N-20, N-22, and N-41 to N-44 stay open. | MS, M4, M5, M6 |
 | N-41 | **Menu question with no meal.** "What's on the menu today?" names no meal. Suggested: ask which meal, listing only the meals served on that day's schedule. **Answer (2026-10-30):** use the time of day. For today, answer with the next meal (the one being served now, otherwise the next one later today). If that is Lite Lunch, say Lite Lunch is on with the usual note and show dinner instead. If no meals are left, reply naturally that the cafeteria is closed for the rest of today, with nothing about tomorrow. For any other date, check its schedule first, then ask which meal, listing only that day's meals with a menu ("breakfast, lunch, or dinner" on a weekday; "brunch or dinner" on a weekend, holiday, or break). Spec 7.1, 7.5, and 8 updated. | MS, M6 |
@@ -267,7 +267,7 @@ The database developer works on the `database/supabase` branch (N-39).
 **Goal:** one approved document that says exactly what Aggrey understands and how it answers. Aggrey is rule-based, so the rules must be written down before they are coded. Without this document, each developer would decide behavior in code, and the tests would have nothing to check against.
 **Depends on:** nothing (documents only). Start now, in parallel with M0–M3.
 **Status:** `docs/Aggrey_Intent_Logic_Spec.md` approved 2026-10-24 (N-40). The open items below are still pending.
-**Needs from you:** N-11, N-18, N-21. N-12, N-13, N-14, N-15, N-16, N-17, N-19, N-20, N-22, N-40, N-41, N-42, N-43, and N-44 are answered.
+**Needs from you:** N-11, N-18. N-12, N-13, N-14, N-15, N-16, N-17, N-19, N-20, N-21, N-22, N-40, N-41, N-42, N-43, and N-44 are answered.
 
 **Steps**
 
@@ -487,7 +487,7 @@ A `db/seed.sql` already exists (added 2026-10-24). It says it was generated from
 
 **Goal:** receive student messages from Sendblue securely and send replies, without leaking Sendblue details into business logic.
 **Depends on:** M6.
-**Needs from you:** N-03, N-11, N-19, N-21, N-37.
+**Needs from you:** N-03, N-11, N-37. N-19 and N-21 are answered.
 
 **Steps**
 
@@ -502,7 +502,7 @@ A `db/seed.sql` already exists (added 2026-10-24). It says it was generated from
    - Enforce a maximum body size and validate the payload with a pydantic model.
    - Ignore events that are not student-initiated inbound messages (including Aggrey's own outbound echoes).
    - Deduplicate by provider message ID using a bounded in-memory store with a TTL. Document that this is not durable (architecture section 7).
-   - Apply the per-sender rate limit (N-21).
+   - Apply the per-sender rate limit (N-21): 5 messages in any 60 seconds, one "slow down" reply on the 6th, then no reply until the sender is back under the limit.
    - Return a fast success response to Sendblue. Do the processing and reply in a way that stays within Sendblue's webhook timeout (confirmed in step 1).
 3. Implement the Sendblue client: send reply, bounded timeout, no automatic retry on ambiguous failures, structured error logging.
 4. Log only request ID, intent, duration, outcome, and (if N-37 is approved) a salted hash of the sender.
@@ -647,6 +647,7 @@ Expected results come from dataset `mvp_v1_3`. Dates are real 2026–2027 dates,
 | 42 | 2026-10-26 (Mon), new number | hi | Only the intro from spec 7.6, as one text; no separate help reply (N-22). |
 | 43 | 2026-10-26 (Mon) 18:00, new number | What's for dinner? | The intro from spec 7.6 as one text, then Monday dinner as a second text. The same question again from that number gets only the dinner reply (N-22). |
 | 44 | 2026-10-25 (Sun) 12:00, then 12:11 | What's on the menu tomorrow?, then dinner | The meal question has expired (more than 10 minutes), so "dinner" gives Sunday dinner, not Monday (N-20). |
+| 45 | 2026-10-26 (Mon) 12:00:00–12:00:30 | 7 messages from one number within 30 seconds | Messages 1–5 get normal replies, message 6 gets one "slow down" reply, message 7 gets no reply (N-21). |
 
 ---
 
