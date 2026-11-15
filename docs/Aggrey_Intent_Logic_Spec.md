@@ -390,7 +390,17 @@ Used only when a context is pending (section 8).
 
 **Decided (N-40).** Reply with one line about what Aggrey does and 2–3 example questions taken from the phrase corpus, for example "What's for dinner?", "Is the caf open?", "Do they have wings today?".
 
-First message from a new number: **Open (N-22).**
+**First message from a new number — Decided (N-22, 2026-11-14).** The first time a number texts Aggrey, Aggrey sends this intro as its own text, word for word:
+
+> Hey, I'm Aggrey. I text you about the caf. I'll tell you what's being served and if it's open, so you don't walk over just to find out it's closed or the food you wanted isn't there.
+>
+> how may I help you?
+
+- If the first message is a greeting or `help` (for example "hi"), the intro is the whole reply. The usual help reply is not sent as well.
+- Otherwise the message is read as usual, and its normal reply (menu, hours, food lookup, `unclear`, and so on) follows as a second text, right after the intro. Example: "What's for dinner?" gets the intro, then tonight's dinner menu.
+- After that, the number is no longer new, and Aggrey just answers.
+- "New" means Aggrey has no record of the number. Like the context in section 8, that record is kept in memory for a single server instance, so after a restart a returning student may see the intro once more.
+- STOP and HELP keywords (7.8, N-11) are handled first and never get the intro.
 
 ### 7.7 `unclear`
 
@@ -522,9 +532,8 @@ Items this spec waits on. Each is in roadmap Section 1.
 | N-11 | STOP and HELP handling | 3.5, 7.8 |
 | N-18 | Reply wording, emojis, station order | 10 |
 | N-20 | How long a pending question lasts | 8 |
-| N-22 | First message from a new number | 7.6 |
 
-N-40 (sign-off) was answered on 2026-10-24 and N-41 (menu question with no meal) N-42 (no station question), N-43 (override hours treated as confirmed), and N-44 (food lookup for a finished meal) on 2026-10-30; see section 14.
+N-40 (sign-off) was answered on 2026-10-24 and N-41 (menu question with no meal) N-42 (no station question), N-43 (override hours treated as confirmed), and N-44 (food lookup for a finished meal) on 2026-10-30, and N-22 (first message from a new number) on 2026-11-14; see section 14.
 
 ---
 
@@ -622,6 +631,7 @@ Every row in `roadmap.md` Section 6 maps to a rule here.
 | 30, 31, 35 | 6.4 finished-meal rule (N-14) |
 | 36, 37, 38, 39, 40 | 6.4 next meal, 7.1 no meal named (N-41), 7.5 pending meal question |
 | 32 | 6.1 local date vs UTC |
+| 42, 43 | 7.6 first message from a new number (N-22) |
 
 ---
 
@@ -654,3 +664,5 @@ Section 9.4 decisions: "burger"/"hamburger" match the patties and Veggie Burger,
 **Amendment, October 30, 2026** (project owner, N-43): for the pilot and testing, all override hours are treated as confirmed, including `pending_confirmation`, and replies carry no "not yet confirmed" label. Holiday sample menus are still labeled as sample menus. To revisit when the real virtual-period hours arrive (N-25). Sections 6.5, 7.2, and 10 updated.
 
 **Amendment, October 30, 2026** (project owner, N-44): a food lookup that matches a meal already over today reports the match and says that meal is over for today. Section 7.4 step 6 updated; corpus row 61 covers it.
+
+**Amendment, November 14, 2026** (project owner, N-22): the first message from a new number gets a fixed intro, sent as its own text. A greeting or help gets only the intro; any other message gets the intro, then its normal reply as a second text. Section 7.6 updated; acceptance rows 42 and 43 cover it.
