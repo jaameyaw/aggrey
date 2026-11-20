@@ -2,7 +2,7 @@
 
 **Status:** M0 (repository foundation) done on 2026-10-24, except the GitHub settings in step 8 (step 1 done later the same day; see N-31). M1 (database schema on Supabase) done on 2026-10-25. M2 (data import from the workbook) done on 2026-10-27. M3 (backend skeleton) done on 2026-10-24. M4 (date and schedule rules) done on 2026-10-27. M5 (dining data services) done on 2026-10-30. No conversation logic or deployments exist yet. `db/schema.sql` and `db/seed.sql` were added on 2026-10-24.
 **Created:** October 24, 2026
-**Last updated:** November 15, 2026 (N-20 answered: a pending question lasts 10 minutes; N-21 answered: 5 messages per minute per sender). Earlier, November 14, 2026 (N-22 answered: first message from a new number). Earlier, October 30, 2026 (M5 done; N-41 answered: menu question with no meal; N-42 answered: no station question for lunch or brunch; N-43 answered: override hours treated as confirmed; N-44 answered: food lookup for a finished meal). Earlier, October 27, 2026 (M4 done; N-13 follow-up on weekday words and conflicting dates). Earlier the same day, M1 and M2 marked done. Earlier, October 24, 2026 (answers to N-03, N-12, N-13, N-14, N-15, N-16, N-17, N-19; holiday dinner sample added as dataset `mvp_v1_3`; new module MS and its draft spec; new questions N-40 to N-44; Intent and Logic Spec approved, N-40)
+**Last updated:** November 20, 2026 (N-11 answered: Sendblue handles STOP and HELP, Aggrey stays silent on them). Earlier, November 15, 2026 (N-20 answered: a pending question lasts 10 minutes; N-21 answered: 5 messages per minute per sender). Earlier, November 14, 2026 (N-22 answered: first message from a new number). Earlier, October 30, 2026 (M5 done; N-41 answered: menu question with no meal; N-42 answered: no station question for lunch or brunch; N-43 answered: override hours treated as confirmed; N-44 answered: food lookup for a finished meal). Earlier, October 27, 2026 (M4 done; N-13 follow-up on weekday words and conflicting dates). Earlier the same day, M1 and M2 marked done. Earlier, October 24, 2026 (answers to N-03, N-12, N-13, N-14, N-15, N-16, N-17, N-19; holiday dinner sample added as dataset `mvp_v1_3`; new module MS and its draft spec; new questions N-40 to N-44; Intent and Logic Spec approved, N-40)
 **Applies to:** the MVP defined in `Aggrey_MVP_PRD.md`, `Aggrey_Technical_Architecture.md`, and `Aggrey_MVP_Database_Schema.md`.
 
 This roadmap breaks the MVP into modules. Each module lists its goal, dependencies, the inputs required from the project owner, step-by-step work, deliverables, and a definition of done. It adds no product features beyond the PRD.
@@ -48,7 +48,7 @@ Where an option is labeled "suggested," it is a proposal for you to accept or re
 | N-08 | Written permission from Livingstone College and/or the dining services provider to use the menu, hours, and the college's name in Aggrey. | M8, M11 |
 | N-09 | Can the landing page use the Livingstone College name, logo, or colors? If not, what wording is allowed? | M8 |
 | N-10 | Privacy notice and terms text for the landing page (who writes it, and whether school approval is needed). Aggrey receives student phone numbers. | M8, M11 |
-| N-11 | Opt-out handling: confirm what Sendblue does with "STOP"/"HELP" messages on your plan, and what Aggrey should reply. Check whether any messaging-registration rules apply to your number type. | M6, M7 |
+| N-11 | Opt-out handling: confirm what Sendblue does with "STOP"/"HELP" messages on your plan, and what Aggrey should reply. Check whether any messaging-registration rules apply to your number type. **Answer (2026-11-20):** Sendblue handles STOP and HELP. Aggrey sends nothing to the exact keywords (stop, unsubscribe, cancel, end, quit, help), so the student gets only Sendblue's reply and never two texts. Other help phrases ("what can you do", "hi") still get Aggrey's help reply (spec 7.6). M7 step 1 confirms Sendblue's keyword behavior on the plan once the account exists (N-03). Spec 3.5, 4, 7.8, and 12 updated. | M6, M7 |
 
 ### 1C. Product behavior decisions
 
@@ -267,7 +267,7 @@ The database developer works on the `database/supabase` branch (N-39).
 **Goal:** one approved document that says exactly what Aggrey understands and how it answers. Aggrey is rule-based, so the rules must be written down before they are coded. Without this document, each developer would decide behavior in code, and the tests would have nothing to check against.
 **Depends on:** nothing (documents only). Start now, in parallel with M0–M3.
 **Status:** `docs/Aggrey_Intent_Logic_Spec.md` approved 2026-10-24 (N-40). The open items below are still pending.
-**Needs from you:** N-11, N-18. N-12, N-13, N-14, N-15, N-16, N-17, N-19, N-20, N-21, N-22, N-40, N-41, N-42, N-43, and N-44 are answered.
+**Needs from you:** N-18. N-11, N-12, N-13, N-14, N-15, N-16, N-17, N-19, N-20, N-21, N-22, N-40, N-41, N-42, N-43, and N-44 are answered.
 
 **Steps**
 
@@ -453,7 +453,7 @@ A `db/seed.sql` already exists (added 2026-10-24). It says it was generated from
 
 **Goal:** understand a student's message, keep short follow-up context, and produce a short, accurate reply string.
 **Depends on:** M5.
-**Needs from you:** N-11, N-18, N-40 (approved spec from MS). N-12, N-13, N-14, N-16, N-17, N-19, N-20, and N-22 are answered, with follow-ups tracked in the spec.
+**Needs from you:** N-18. N-40 (approved spec from MS), N-11, N-12, N-13, N-14, N-16, N-17, N-19, N-20, and N-22 are answered, with follow-ups tracked in the spec.
 
 **Steps**
 
@@ -464,7 +464,7 @@ A `db/seed.sql` already exists (added 2026-10-24). It says it was generated from
    - Date phrase (N-13).
    - Station name and approved aliases (for example "grill," "burgers").
    - Food keyword for food lookups.
-   - Opt-out and help keywords (N-11).
+   - Carrier keywords STOP and HELP (N-11): recognized so Aggrey sends nothing; Sendblue replies.
 3. **Station replies** (PRD FR-12, N-42):
    - A generic weekday lunch or weekend brunch question shows every station, grouped by station, after one line that says how many stations there are. Station names come from the data. No station question.
    - A direct station question ("What's at the pizza station?", or "Pizza" on its own) returns only that station.
@@ -487,7 +487,7 @@ A `db/seed.sql` already exists (added 2026-10-24). It says it was generated from
 
 **Goal:** receive student messages from Sendblue securely and send replies, without leaking Sendblue details into business logic.
 **Depends on:** M6.
-**Needs from you:** N-03, N-11, N-37. N-19 and N-21 are answered.
+**Needs from you:** N-03, N-37. N-11, N-19, and N-21 are answered.
 
 **Steps**
 
@@ -631,7 +631,7 @@ Expected results come from dataset `mvp_v1_3`. Dates are real 2026–2027 dates,
 | 26 | Any | Database unavailable | Honest "can't get dining info right now"; no invented answer. |
 | 27 | Any | Duplicate Sendblue delivery | Exactly one reply sent. |
 | 28 | Any | Webhook with bad secret | Rejected; no reply sent; logged. |
-| 29 | Any | STOP (per N-11) | Behaves as approved. |
+| 29 | Any | STOP or HELP (N-11) | Aggrey sends nothing; Sendblue handles the keyword. |
 | 30 | 2026-10-26 (Mon) 15:30 | What's for lunch? | Lunch is over; dinner is served 5:00 to 8:00 PM (N-14). Lunch menu not shown. |
 | 31 | 2026-10-26 (Mon) 14:30 | What's for lunch? | Lunch is over; Lite Lunch is being served until 3:00 PM, and most lunch food is usually finished by then (N-14). |
 | 35 | 2026-10-26 (Mon) 20:30 | What's for dinner? | Dinner is over for today. No menu, and no pointer to tomorrow (N-14). |
