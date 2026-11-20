@@ -139,8 +139,8 @@ The full station name, normalized ("grill sandwich," "main hot food"), always wo
 
 | Keyword (whole message, after normalization) | Meaning | Status |
 | --- | --- | --- |
-| stop, unsubscribe, cancel, end, quit | Opt out | **Open (N-11)** — depends on what Sendblue does with these on your plan |
-| help | Help | **Open (N-11)** for carrier rules; **Decided (N-40)** behavior in section 7.6 |
+| stop, unsubscribe, cancel, end, quit | Carrier keyword (opt out) | **Decided (N-11):** Sendblue handles it; Aggrey sends nothing (7.8) |
+| help | Carrier keyword (help) | **Decided (N-11):** Sendblue handles it; Aggrey sends nothing (7.8) |
 | what can you do, how does this work, commands | Help | **Decided (N-40)** |
 | hi, hello, hey, yo | Greeting | **Decided (N-40):** treated as help |
 
@@ -158,10 +158,10 @@ The full station name, normalized ("grill sandwich," "main hot food"), always wo
 | `food_lookup` | Is a specific food on the menu | food-item lookup |
 | `follow_up` | A short reply to a question Aggrey just asked (which meal, N-41) | conversation control |
 | `help` | What Aggrey can do, or a greeting | unsupported/unclear (FR-10) |
-| `opt_out` | STOP and similar keywords | not in PRD; N-11 |
+| `carrier_keyword` | STOP, HELP, and the other section 3.5 carrier keywords, handled by Sendblue | not in PRD; N-11 |
 | `unclear` | Anything else | unsupported/unclear (FR-10) |
 
-If you approve this list, the PRD's FR-2 should note that `open_now` is part of hours lookup, and that `follow_up`, `help`, and `opt_out` are conversation controls.
+If you approve this list, the PRD's FR-2 should note that `open_now` is part of hours lookup, and that `follow_up`, `help`, and `carrier_keyword` are conversation controls.
 
 ### Trigger phrases
 
@@ -183,8 +183,8 @@ If you approve this list, the PRD's FR-2 should note that `open_now` is part of 
 | Order | Rule | Example | Result |
 | --- | --- | --- | --- |
 | 1 | Empty message, or only emoji or punctuation | "??" | `unclear` |
-| 2 | Whole message is an opt-out keyword | "STOP" | `opt_out` |
-| 3 | Whole message is a help keyword or greeting | "help", "hi" | `help` |
+| 2 | Whole message is a carrier keyword (section 3.5) | "STOP", "help" | `carrier_keyword` |
+| 3 | Whole message is a help phrase or greeting | "what can you do", "hi" | `help` |
 | 4 | A context is pending and the message is a short answer to it (section 8) | "dinner" after the which-meal question | `follow_up` |
 | 5 | Unsupported date phrase present (section 3.2) | "What's for lunch 11/25?" | Intent is still detected by rules 6–9, but the reply asks the student to rephrase the date |
 | 6 | `open_now` trigger, and no "what time" or "when" next to a meal word | "Is the caf open?", "Is lunch still going?" | `open_now` |
@@ -408,9 +408,9 @@ Used only when a context is pending (section 8).
 
 Unsupported date phrase (section 3.2): ask the student to rephrase using a supported date word, and list those words. **Decided (N-40).**
 
-### 7.8 `opt_out`
+### 7.8 `carrier_keyword`
 
-**Open (N-11).** Depends on what Sendblue does with STOP and HELP on your plan. Until answered, Aggrey sends no dining reply to an opt-out keyword.
+**Decided (N-11, 2026-11-20).** Sendblue handles STOP and HELP. When the whole message is one of the carrier keywords in section 3.5 (stop, unsubscribe, cancel, end, quit, help), Aggrey sends nothing, so the student gets only Sendblue's reply. The keyword does not get the first-message intro (7.6) and does not clear or set context. Other help phrases ("what can you do", "hi") are `help`, not carrier keywords, and get the 7.6 reply. Roadmap M7 step 1 confirms Sendblue's keyword behavior on the plan once the account exists (N-03).
 
 ---
 
@@ -529,10 +529,9 @@ Items this spec waits on. Each is in roadmap Section 1.
 
 | ID | Topic | Where it applies here |
 | --- | --- | --- |
-| N-11 | STOP and HELP handling | 3.5, 7.8 |
 | N-18 | Reply wording, emojis, station order | 10 |
 
-N-40 (sign-off) was answered on 2026-10-24 and N-41 (menu question with no meal) N-42 (no station question), N-43 (override hours treated as confirmed), and N-44 (food lookup for a finished meal) on 2026-10-30, N-22 (first message from a new number) on 2026-11-14, and N-20 (how long a pending question lasts) on 2026-11-15; see section 14.
+N-40 (sign-off) was answered on 2026-10-24 and N-41 (menu question with no meal) N-42 (no station question), N-43 (override hours treated as confirmed), and N-44 (food lookup for a finished meal) on 2026-10-30, N-22 (first message from a new number) on 2026-11-14, N-20 (how long a pending question lasts) on 2026-11-15, and N-11 (STOP and HELP) on 2026-11-20; see section 14.
 
 ---
 
@@ -583,8 +582,8 @@ Expected readings for the test suite. When the conversation tests are added, thi
 | 39 | lunch or dinner? | menu | ask | today | | | Two meals named |
 | 40 | asdfgh | unclear | | | | | |
 | 41 | hi | help | | | | | Greeting |
-| 42 | help | help | | | | | N-11 |
-| 43 | STOP | opt_out | | | | | N-11 |
+| 42 | help | carrier_keyword | | | | | Sendblue replies; Aggrey sends nothing (N-11) |
+| 43 | STOP | carrier_keyword | | | | | Sendblue replies; Aggrey sends nothing (N-11) |
 | 44 | Do they have veggies? | food_lookup | | today | | veggie | "ie" form (9.1) |
 | 45 | any sausages for breakfast | food_lookup | breakfast | today | | sausage | Plain "s" rule (9.1) |
 | 46 | Do they have burgers? | food_lookup | | today | | burger | Beef Patty, Turkey Patty, Veggie Burger; not the bun (9.3) |
@@ -626,7 +625,7 @@ Every row in `roadmap.md` Section 6 maps to a rule here.
 | 24, 25 | 7.7 unclear, 3.2 unsupported dates |
 | 26 | 6.7 database unreachable |
 | 27, 28 | Outside this spec (roadmap M7, webhook handling) |
-| 29 | 7.8 opt-out (N-11) |
+| 29 | 7.8 carrier keywords (N-11) |
 | 30, 31, 35 | 6.4 finished-meal rule (N-14) |
 | 36, 37, 38, 39, 40 | 6.4 next meal, 7.1 no meal named (N-41), 7.5 pending meal question |
 | 44 | 8 context lasts 10 minutes (N-20) |
@@ -668,3 +667,5 @@ Section 9.4 decisions: "burger"/"hamburger" match the patties and Veggie Burger,
 **Amendment, November 14, 2026** (project owner, N-22): the first message from a new number gets a fixed intro, sent as its own text. A greeting or help gets only the intro; any other message gets the intro, then its normal reply as a second text. Section 7.6 updated; acceptance rows 42 and 43 cover it.
 
 **Amendment, November 15, 2026** (project owner, N-20): a pending context lasts 10 minutes. After that, the next message is read as a new message. Section 8 updated; acceptance row 44 covers it.
+
+**Amendment, November 20, 2026** (project owner, N-11): Sendblue handles STOP and HELP. Aggrey sends nothing to the section 3.5 carrier keywords, and the intent `opt_out` is renamed `carrier_keyword` because it now covers HELP too. Other help phrases still get the 7.6 reply. Sections 3.5, 4 (with its order table), 7.8, 11, and 12 updated; corpus rows 42 and 43 changed.
